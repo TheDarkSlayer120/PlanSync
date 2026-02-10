@@ -55,11 +55,15 @@ public class PlanSyncStopwatch {
                         displayRunning = false;
                         return Navigation.TIMER;
                     }
+                    case "3" -> {                                // Go to Time Calculator
+                        displayRunning = false;
+                        return Navigation.TIME_CALCULATOR;
+                    }
                     case "0" -> {                                // Main menu
                         displayRunning = false;
                         return Navigation.MAIN;
                     }
-                    default -> System.out.println("Invalid option.");
+                    default -> System.out.println("\nInvalid option.");
                 }
 
             } else {
@@ -75,11 +79,11 @@ public class PlanSyncStopwatch {
                     case "5" -> reset();                         // Reset (stop and clear time + laps)
                     case "6" -> {                                // Go back (stopwatch menu / caller)
                         reset();                                  // ensure stopwatch is stopped and cleared
-                        System.out.println("Returning to Stopwatch menu...");
+                        System.out.println("\nReturning to Stopwatch menu...");
                         // fall through to outer loop; caller will decide where to go next
                     }
                     
-                    default -> System.out.println("Invalid option.");
+                    default -> System.out.println("\nInvalid option.");
                 }
             }
         }
@@ -94,6 +98,7 @@ public class PlanSyncStopwatch {
 
         System.out.println("\n1. Start");
         System.out.println("\n2. Go to Timer");
+        System.out.println("3. Go to Time Calculator");
         System.out.println("0. Main Menu");
         System.out.print("\nChoose option: ");
     }
@@ -117,7 +122,7 @@ public class PlanSyncStopwatch {
 
     private static void start() {
         if (running) {
-            System.out.println("Stopwatch already running.");
+            System.out.println("\nStopwatch already running.");
             System.out.println("\n");
             return;
         }
