@@ -6,8 +6,8 @@ public class PlanSyncTimer {
     private static int initialSeconds;
     private static boolean running;
     private static boolean paused;
+    private static boolean finished;   // true when timer hits 0
 
-    // single display thread for the live countdown
     private static Thread displayThread;
 
     public static Navigation run() {
@@ -32,25 +32,29 @@ public class PlanSyncTimer {
     /* ================= TIMER FLOW ================= */
 
     private static void startTimerFlow() {
-        int duration = getDurationInSeconds();
+        int duration = getDurationFromPresetsOrCustom();
         if (duration <= 0) return;
 
         initialSeconds = duration;
         remainingSeconds = duration;
         running = true;
         paused = false;
+        finished = false;
 
         Thread countdownThread = new Thread(() -> {
-            while (running) {
-                if (!paused && remainingSeconds > 0) {
+            while (running && remainingSeconds > 0) {
+                if (!paused) {
                     try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
                     remainingSeconds--;
-                    if (remainingSeconds == 0 && running) {
+                    if (remainingSeconds == 0) {
                         Toolkit.getDefaultToolkit().beep();
-                        stopDisplayThread();          // clean up live line
-                        System.out.println("Time’s up!");
-                        running = false;
+                        stopDisplayThread();
+                        System.out.println("Time's up!");
+                        System.out.println("\nPress Enter to continue...");
+                        finished = true;     // mark as finished
+                        running = false;     // stop control loop
                     }
+                    
                 } else {
                     try { Thread.sleep(200); } catch (InterruptedException ignored) {}
                 }
@@ -59,25 +63,21 @@ public class PlanSyncTimer {
         countdownThread.setDaemon(true);
         countdownThread.start();
 
-        startDisplayThread();   // start live countdown line
+        startDisplayThread();
 
-        liveControlLoop();      // pause/resume/reset/stop
+        liveControlLoop();      // exits when stopped or finished
 
-        running = false;
-        stopDisplayThread();    // make sure display stops
+        stopDisplayThread();
         System.out.println();
     }
 
     /* ============ LIVE DISPLAY ============ */
 
     private static void startDisplayThread() {
-        // do not start a new one if it is already running
-        if (displayThread != null && displayThread.isAlive()) {
-            return;
-        }
+        if (displayThread != null && displayThread.isAlive()) return;
 
         displayThread = new Thread(() -> {
-            while (running) {
+            while (running && !finished) {
                 System.out.print("\rRemaining: " + formatTime(remainingSeconds) + " ");
                 try { Thread.sleep(500); } catch (InterruptedException ignored) {}
             }
@@ -92,7 +92,6 @@ public class PlanSyncTimer {
             try { displayThread.join(100); } catch (InterruptedException ignored) {}
             displayThread = null;
         }
-        // clear the live line and move to a new line
         System.out.print("\r");
         System.out.println();
     }
@@ -100,8 +99,7 @@ public class PlanSyncTimer {
     /* ================= LIVE CONTROLS ================= */
 
     private static void liveControlLoop() {
-        while (running) {
-            // freeze the live line so menu + input are clean
+        while (running && remainingSeconds > 0) {
             stopDisplayThread();
 
             System.out.println("\n--- TIMER CONTROLS ---");
@@ -114,6 +112,10 @@ public class PlanSyncTimer {
 
             String choice = ConsoleUtils.scanner.nextLine();
 
+            if (!running || remainingSeconds == 0 || finished) {
+                break; // timer stopped or finished while typing
+            }
+
             switch (choice) {
                 case "1" -> pause();
                 case "2" -> resume();
@@ -122,8 +124,7 @@ public class PlanSyncTimer {
                 default -> System.out.println("Invalid option.");
             }
 
-            // after handling input, resume live display if timer still running
-            if (running) {
+            if (running && remainingSeconds > 0 && !finished) {
                 startDisplayThread();
             }
         }
@@ -135,10 +136,14 @@ public class PlanSyncTimer {
         if (!paused && remainingSeconds > 0) {
             paused = true;
             System.out.println("Timer paused. Remaining: " + formatTime(remainingSeconds));
+            System.out.println("\n");
+            
         } else if (remainingSeconds == 0) {
             System.out.println("Timer already finished. Reset if you want to start again.");
+            System.out.println("\n");
         } else {
             System.out.println("Timer is already paused.");
+            System.out.println("\n");
         }
     }
 
@@ -146,27 +151,66 @@ public class PlanSyncTimer {
         if (paused && remainingSeconds > 0) {
             paused = false;
             System.out.println("Timer resumed. Remaining: " + formatTime(remainingSeconds));
+            System.out.println("\n");
         } else if (remainingSeconds == 0) {
             System.out.println("Timer already finished. Reset first to start again.");
+            System.out.println("\n");
         } else {
             System.out.println("Timer is already running. Remaining: " + formatTime(remainingSeconds));
+            System.out.println("\n");
         }
     }
 
     private static void reset() {
         remainingSeconds = initialSeconds;
         paused = false;
+        finished = false;
         System.out.println("Timer reset to " + formatTime(remainingSeconds) + ".");
+        System.out.println("\n");
     }
 
     private static void stop() {
         running = false;
         paused = false;
+        finished = false;
         System.out.println("Timer stopped.");
+        System.out.println("\n");
     }
 
-    /* ================= INPUT ================= */
+    /* ================= PRESETS + INPUT ================= */
 
+    // New menu: presets + custom time
+    private static int getDurationFromPresetsOrCustom() {
+        while (true) {
+            System.out.println("\nChoose preset time:");
+            System.out.println("1. 00:01:00  (1 minute)");
+            System.out.println("2. 00:05:00  (5 minutes)");
+            System.out.println("3. 00:10:00  (10 minutes)");
+            System.out.println("4. 00:15:00  (15 minutes)");
+            System.out.println("5. 00:30:00  (30 minutes)");
+            System.out.println("6. 01:00:00  (1 hour)");
+            System.out.println("7. --:--:--  (Custom time)");
+            System.out.println("0. Cancel");
+            System.out.print("\nChoose option: ");
+
+            String choice = ConsoleUtils.scanner.nextLine();
+
+            switch (choice) {
+                case "1": return 60;        // 1 minute
+                case "2": return 5 * 60;    // 5 minutes
+                case "3": return 10 * 60;   // 10 minutes
+                case "4": return 15 * 60;   // 15 minutes
+                case "5": return 30 * 60;   // 30 minutes
+                case "6": return 60 * 60;   // 1 hour
+                case "7": return getDurationInSeconds(); // custom time (existing menu)
+                case "0": return 0;         // cancel
+                default:
+                    System.out.println("Invalid option.");
+            }
+        }
+    }
+
+    // Existing custom input menu
     private static int getDurationInSeconds() {
         System.out.println("\nChoose time unit:");
         System.out.println("1. Hours");
