@@ -3,5 +3,6 @@ public enum Navigation {
     TIMER,
     STOPWATCH,
     TIME_CALCULATOR,
+    CALENDAR,
     EXIT
 }
