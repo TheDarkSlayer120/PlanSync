@@ -16,6 +16,7 @@ public class PlanSyncTimer {
             System.out.println("1. Start timer");
             System.out.println("\n2. Go to Stopwatch");
             System.out.println("3. Go to Time Calculator");
+            System.out.println("4. Go to Calendar");
             System.out.println("0. Main menu");
             System.out.print("\nChoose option: ");
 
@@ -23,6 +24,7 @@ public class PlanSyncTimer {
                 case "1" -> startTimerFlow();
                 case "2" -> { return Navigation.STOPWATCH; }
                 case "3" -> { return Navigation.TIME_CALCULATOR; }
+                case "4" -> { return Navigation.CALENDAR; }
                 case "0" -> { return Navigation.MAIN; }
                 default -> System.out.println("Invalid option.");
             }
