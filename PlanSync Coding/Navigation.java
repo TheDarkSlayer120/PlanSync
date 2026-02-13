@@ -4,5 +4,7 @@ public enum Navigation {
     STOPWATCH,
     TIME_CALCULATOR,
     CALENDAR,
+    ACTIVE_TASKS,
+    COMPLETED_TASKS,
     EXIT
 }
