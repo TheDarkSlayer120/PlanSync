@@ -95,8 +95,9 @@ public class PlanSyncActiveTasks {
             System.out.println("1. Mark Task As Complete (ACTIVE TASKS ONLY)");
             System.out.println("2. Add a New Task");
             System.out.println("3. Delete a Task");
-            System.out.println("4. Display Active Recurring ");
-            System.out.println("\n5. Go to Completed Tasks"); 
+            System.out.println("\n4. Display Active Tasks");
+            System.out.println("5. Display Active Recurring ");
+            System.out.println("\n6. Go to Completed Tasks"); 
             System.out.println("0. Go Back");
             System.out.print("\nChoose Option: ");
 
@@ -106,8 +107,9 @@ public class PlanSyncActiveTasks {
                 case "1" -> markTaskComplete();
                 case "2" -> addTaskMenu();
                 case "3" -> deleteTaskMenu();
-                case "4" -> showRecurringTasks();
-                case "5" -> { 
+                case "4" -> displayActiveTasks();
+                case "5" -> showRecurringTasks();
+                case "6" -> { 
                     saveAll(); 
                     return Navigation.COMPLETED_TASKS;  
                     }
@@ -150,7 +152,7 @@ public class PlanSyncActiveTasks {
                 status = days + " DAYS REMAINING";
             }
 
-            String line = String.format("[TASK%d] %s -> %s -> {%s} -> [%s]",
+            String line = String.format("[%d] %s -> %s -> {%s} -> [%s]",
                     index++,
                     task.name,
                     task.description,
@@ -206,7 +208,7 @@ public class PlanSyncActiveTasks {
                 }
             }
 
-            String line = String.format("[TASK%d] %s -> %s -> %s -> [%s]",
+            String line = String.format("[%d] %s -> %s -> %s -> [%s]",
                     index++,
                     rt.name,
                     rt.description,
@@ -218,7 +220,7 @@ public class PlanSyncActiveTasks {
         System.out.println("============================================================================");
     }
 
-    /* ================= MARK COMPLETE (WIRED TO COMPLETED TASKS) ================= */
+    /* ================= MARK MULTIPLE COMPLETE ================= */
 
     private static void markTaskComplete() {
         if (activeTasks.isEmpty()) {
@@ -228,47 +230,87 @@ public class PlanSyncActiveTasks {
 
         displayActiveTasks();
 
-        System.out.print("\nChoose Complete Task (e.g. TASK1), or Enter 0 to Cancel: ");
-        String input = ConsoleUtils.scanner.nextLine().trim();
-        if (input.equals("0")) return;
+        while (true) {
+            System.out.print(
+                "\nChoose Task(s) to Complete (e.g. 1 2 3), or Enter 0 to Cancel: "
+            );
+            String inputLine = ConsoleUtils.scanner.nextLine().trim();
+            if (inputLine.equals("0")) return;
 
-        int index = parseTaskIndex(input, "TASK");
-        if (index == -1 || index > activeTasks.size()) {
-            System.out.println("Invalid Task ID.");
+            String[] tokens = inputLine.split("\\s+");
+            if (tokens.length == 0) {
+                System.out.println("No Task IDs entered.");
+                continue;
+            }
+
+            // Collect valid targets in order, avoid duplicates
+            Map<String, ActiveTask> toComplete = new LinkedHashMap<>();
+            boolean anyInvalid = false;
+
+            for (String token : tokens) {
+                int idx = parseTaskIndex(token);
+                if (idx == -1 || idx > activeTasks.size()) {
+                    System.out.println("Invalid Task ID: " + token);
+                    anyInvalid = true;
+                    continue;
+                }
+                ActiveTask target = getActiveByIndex(idx);
+                if (target == null) {
+                    System.out.println("Task not found for ID: " + token);
+                    anyInvalid = true;
+                    continue;
+                }
+                toComplete.putIfAbsent(target.id, target);
+            }
+
+            if (toComplete.isEmpty()) {
+                if (anyInvalid) {
+                    System.out.println("No valid Task IDs entered. Try again.");
+                    continue;
+                } else {
+                    System.out.println("No tasks selected.");
+                    return;
+                }
+            }
+
+            // Show summary and confirm
+            System.out.println("\nYou are about to mark the following tasks as COMPLETE:");
+            for (ActiveTask t : toComplete.values()) {
+                System.out.println("- " + t.name + " (ID: " + t.id + ")");
+            }
+
+            System.out.print("\nAre You Sure? [Y/N]: ");
+            String confirm = ConsoleUtils.scanner.nextLine().trim().toUpperCase(Locale.ROOT);
+            if (!confirm.equals("Y")) {
+                System.out.println("Cancelled.");
+                return;
+            }
+
+            // Mark all selected tasks complete
+            for (String id : toComplete.keySet()) {
+                ActiveTask task = toComplete.get(id);
+                PlanSyncCompletedTasks.addCompleted(
+                    task.name,
+                    task.description,
+                    task.deadline,
+                    LocalDate.now()
+                );
+                activeTasks.remove(id);
+            }
+            saveAll();
+
+            System.out.println("\nTask(s) Marked Complete!");
+            System.out.println("\nTasks moved to Completed Tasks:");
+            for (ActiveTask task : toComplete.values()) {
+                System.out.printf("- [%s] %s -> [COMPLETED %s]%n", 
+                    task.name, task.description, LocalDate.now().format(DATE_FMT));
+            }
+            System.out.println("\nUpdated ACTIVE TASKS:\n");
+            displayActiveTasks();
             return;
         }
-
-        ActiveTask target = getActiveByIndex(index);
-        if (target == null) {
-            System.out.println("Task not found.");
-            return;
-        }
-
-        System.out.print("\nAre You Sure? (Y/N): ");
-        String confirm = ConsoleUtils.scanner.nextLine().trim().toUpperCase(Locale.ROOT);
-        if (!confirm.equals("Y")) {
-            System.out.println("Cancelled.");
-            return;
-        }
-
-        // Add to completed tasks file
-        PlanSyncCompletedTasks.addCompleted(
-                target.name,
-                target.description,
-                target.deadline,
-                LocalDate.now()
-        );
-
-        // Remove from active
-        activeTasks.remove(target.id);
-        saveAll();
-
-        System.out.println("\nTask Marked Complete!");
-        System.out.println("Task Moved to Completed Tasks -> (" + target.name + ")");
-
-        System.out.println("\nUpdated ACTIVE TASKS:\n");
-        displayActiveTasks();
     }
+
 
     /* ================= DELETE TASK ================= */
 
@@ -298,7 +340,7 @@ public class PlanSyncActiveTasks {
 
         while (true) {
             System.out.print(
-                "\nChoose Task(s) to Delete (e.g. TASK1 TASK2 TASK3), or Enter 0 to Cancel: "
+                "\nChoose Task(s) to Delete (e.g. 1 2 3), or Enter 0 to Cancel: "
             );
             String inputLine = ConsoleUtils.scanner.nextLine().trim();
             if (inputLine.equals("0")) return;
@@ -314,7 +356,7 @@ public class PlanSyncActiveTasks {
             boolean anyInvalid = false;
 
             for (String token : tokens) {
-                int idx = parseTaskIndex(token, "TASK");
+                int idx = parseTaskIndex(token);
                 if (idx == -1 || idx > activeTasks.size()) {
                     System.out.println("Invalid Task ID: " + token);
                     anyInvalid = true;
@@ -376,7 +418,7 @@ public class PlanSyncActiveTasks {
 
         while (true) {
             System.out.print(
-                "\nChoose Task(s) to Delete (e.g. TASK1 TASK2 TASK3), or Enter 0 to Cancel: "
+                "\nChoose Task(s) to Delete (e.g. 1 2 3), or Enter 0 to Cancel: "
             );
             String inputLine = ConsoleUtils.scanner.nextLine().trim();
             if (inputLine.equals("0")) return;
@@ -392,7 +434,7 @@ public class PlanSyncActiveTasks {
             boolean anyInvalid = false;
 
             for (String token : tokens) {
-                int idx = parseTaskIndex(token, "TASK");
+                int idx = parseTaskIndex(token);
                 if (idx == -1 || idx > recurringTasks.size()) {
                     System.out.println("Invalid Task ID: " + token);
                     anyInvalid = true;
@@ -481,7 +523,7 @@ public class PlanSyncActiveTasks {
             }
         }
 
-        String id = "TASK" + (activeTasks.size() + 1);
+        String id = String.valueOf(activeTasks.size() + 1);
         ActiveTask t = new ActiveTask();
         t.id = id;
         t.name = name;
@@ -547,7 +589,7 @@ public class PlanSyncActiveTasks {
             }
         }
 
-        String id = "TASK" + (recurringTasks.size() + 1);
+        String id = String.valueOf(recurringTasks.size() + 1);
         rt.id = id;
         recurringTasks.put(id, rt);
 
@@ -560,11 +602,7 @@ public class PlanSyncActiveTasks {
 
     /* ================= HELPERS ================= */
 
-    private static int parseTaskIndex(String input, String prefix) {
-        input = input.toUpperCase(Locale.ROOT);
-        if (input.startsWith(prefix)) {
-            input = input.substring(prefix.length());
-        }
+    private static int parseTaskIndex(String input) {
         try {
             return Integer.parseInt(input);
         } catch (NumberFormatException e) {
