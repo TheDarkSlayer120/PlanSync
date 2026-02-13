@@ -1,259 +1,262 @@
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+import java.awt.Toolkit;
 
-public class PlanSyncTimeCalculator {
+public class PlanSyncTimer {
 
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static int remainingSeconds;
+    private static int initialSeconds;
+    private static boolean running;
+    private static boolean paused;
+    private static boolean finished;   // true when timer hits 0
+
+    private static Thread displayThread;
 
     public static Navigation run() {
         while (true) {
-            System.out.println("\n--- TIME CALCULATOR ---");
-            System.out.println("1. Add Duration From Now");
-            System.out.println("2. Duration Between Times");
-            System.out.println("3. Duration Between Dates");
-            System.out.println("\n4. Go to Timer");
-            System.out.println("5. Go to Stopwatch");
-            System.out.println("6. Go to Calendar");
-            System.out.println("7. Go to Active Tasks");
-            System.out.println("8. Go to Completed Tasks");
-            System.out.println("0. Main Menu");
+            System.out.println("\n--- TIMER ---");
+            System.out.println("1. Start timer");
+            System.out.println("\n2. Go to Stopwatch");
+            System.out.println("3. Go to Time Calculator");
+            System.out.println("4. Go to Calendar");
+            System.out.println("5. Go to Active Tasks");
+            System.out.println("6. Go to Completed Tasks");
+            System.out.println("0. Main menu");
             System.out.print("\nChoose option: ");
 
             switch (ConsoleUtils.scanner.nextLine()) {
-                case "1" -> addDurationFromNow();
-                case "2" -> durationBetweenTimes();
-                case "3" -> durationBetweenDates();
-                case "4" -> { return Navigation.TIMER; }
-                case "5" -> { return Navigation.STOPWATCH; }
-                case "6" -> { return Navigation.CALENDAR; }
-                case "7" -> { return Navigation.ACTIVE_TASKS; }
-                case "8" -> { return Navigation.COMPLETED_TASKS; }
+                case "1" -> startTimerFlow();
+                case "2" -> { return Navigation.STOPWATCH; }
+                case "3" -> { return Navigation.TIME_CALCULATOR; }
+                case "4" -> { return Navigation.CALENDAR; }
+                case "5" -> { return Navigation.ACTIVE_TASKS; }
+                case "6" -> { return Navigation.COMPLETED_TASKS; }
                 case "0" -> { return Navigation.MAIN; }
-                default -> System.out.println("\nInvalid option.");
+                default -> System.out.println("Invalid option.");
             }
         }
     }
 
-    /* ================= 1. ADD DURATION FROM NOW ================= */
+    /* ================= TIMER FLOW ================= */
 
-    private static void addDurationFromNow() {
-        while (true) {
-            System.out.print("\nEnter duration (e.g. '1 Day 2 Hours 30 Minutes'): ");
-            String input = ConsoleUtils.scanner.nextLine().trim().toLowerCase();
-            
-            if (input.equals("0")) return; // Back to main menu
-            
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime result = now;
-            boolean validInput = false;
+    private static void startTimerFlow() {
+        int duration = getDurationFromPresetsOrCustom();
+        if (duration <= 0) return;
 
-            // Regex matches "1 day", "2 hours", "30 minutes", etc.
-            Pattern pattern = Pattern.compile("(\\d+)\\s*(day|hour|minute|month|year)s?");
-            Matcher matcher = pattern.matcher(input);
+        initialSeconds = duration;
+        remainingSeconds = duration;
+        running = true;
+        paused = false;
+        finished = false;
 
-            while (matcher.find()) {
-                validInput = true;
-                int value = Integer.parseInt(matcher.group(1));
-                String unit = matcher.group(2);
-
-                switch (unit) {
-                    case "day": result = result.plusDays(value); break;
-                    case "hour": result = result.plusHours(value); break;
-                    case "minute": result = result.plusMinutes(value); break;
-                    case "month": result = result.plusMonths(value); break;
-                    case "year": result = result.plusYears(value); break;
+        Thread countdownThread = new Thread(() -> {
+            while (running && remainingSeconds > 0) {
+                if (!paused) {
+                    try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+                    remainingSeconds--;
+                    if (remainingSeconds == 0) {
+                        Toolkit.getDefaultToolkit().beep();
+                        stopDisplayThread();
+                        System.out.println("Time's up!");
+                        System.out.println("\nPress Enter to continue...");
+                        finished = true;     // mark as finished
+                        running = false;     // stop control loop
+                    }
+                    
+                } else {
+                    try { Thread.sleep(200); } catch (InterruptedException ignored) {}
                 }
             }
+        });
+        countdownThread.setDaemon(true);
+        countdownThread.start();
 
-            if (validInput) {
-                DateTimeFormatter fmt = DateTimeFormatter.ofPattern("d MMMM yyyy | HH:mm");
-                System.out.println("\nResult: " + result.format(fmt));
-                return;
-            } else {
-                System.out.println("\nInvalid format. Use '1 day', '2 hours', etc. or '0' to go back.");
+        startDisplayThread();
+
+        liveControlLoop();      // exits when stopped or finished
+
+        stopDisplayThread();
+        System.out.println();
+    }
+
+    /* ============ LIVE DISPLAY ============ */
+
+    private static void startDisplayThread() {
+        if (displayThread != null && displayThread.isAlive()) return;
+
+        displayThread = new Thread(() -> {
+            while (running && !finished) {
+                System.out.print("\rRemaining: " + formatTime(remainingSeconds) + " ");
+                try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+            }
+        });
+        displayThread.setDaemon(true);
+        displayThread.start();
+    }
+
+    private static void stopDisplayThread() {
+        if (displayThread != null && displayThread.isAlive()) {
+            displayThread.interrupt();
+            try { displayThread.join(100); } catch (InterruptedException ignored) {}
+            displayThread = null;
+        }
+        System.out.print("\r");
+        System.out.println();
+    }
+
+    /* ================= LIVE CONTROLS ================= */
+
+    private static void liveControlLoop() {
+        while (running && remainingSeconds > 0) {
+            stopDisplayThread();
+
+            System.out.println("\n--- TIMER CONTROLS ---");
+            System.out.println("1. Pause");
+            System.out.println("2. Resume");
+            System.out.println("3. Reset");
+            System.out.println("0. Stop / Go back");
+            System.out.println("Remaining: " + formatTime(remainingSeconds));
+            System.out.print("\nChoose option: ");
+
+            String choice = ConsoleUtils.scanner.nextLine();
+
+            if (!running || remainingSeconds == 0 || finished) {
+                break; // timer stopped or finished while typing
+            }
+
+            switch (choice) {
+                case "1" -> pause();
+                case "2" -> resume();
+                case "3" -> reset();
+                case "0" -> stop();
+                default -> System.out.println("Invalid option.");
+            }
+
+            if (running && remainingSeconds > 0 && !finished) {
+                startDisplayThread();
             }
         }
     }
 
-    /* ================= 2. DURATION BETWEEN TIMES ================= */
+    /* ================= ACTIONS ================= */
 
-    private static void durationBetweenTimes() {
-        // Get valid start time
-        String startInput;
-        while (true) {
-            System.out.print("\nStart time (HH:MM) or '0' to go back: ");
-            startInput = ConsoleUtils.scanner.nextLine().trim();
-            if (startInput.equals("0")) return;
-            if (isValidTime(startInput)) break;
-            System.out.println("\nInvalid format. Use HH:MM (00-23:00-59)");
-        }
-
-        // Get valid end time
-        String endInput;
-        while (true) {
-            System.out.print("End time (HH:MM) or '0' to go back: ");
-            endInput = ConsoleUtils.scanner.nextLine().trim();
-            if (endInput.equals("0")) return;
-            if (isValidTime(endInput)) break;
-            System.out.println("\nInvalid format. Use HH:MM (00-23:00-59)");
-        }
-
-        try {
-            String[] startParts = startInput.split(":");
-            String[] endParts = endInput.split(":");
+    private static void pause() {
+        if (!paused && remainingSeconds > 0) {
+            paused = true;
+            System.out.println("Timer paused. Remaining: " + formatTime(remainingSeconds));
+            System.out.println("\n");
             
-            int startHour = Integer.parseInt(startParts[0]);
-            int startMinute = Integer.parseInt(startParts[1]);
-            int endHour = Integer.parseInt(endParts[0]);
-            int endMinute = Integer.parseInt(endParts[1]);
-
-            int startMinutes = startHour * 60 + startMinute;
-            int endMinutes = endHour * 60 + endMinute;
-
-            int diffMinutes;
-            if (endMinutes >= startMinutes) {
-                diffMinutes = endMinutes - startMinutes;
-            } else {
-                // Assume next day
-                diffMinutes = (endMinutes + 1440) - startMinutes;
-            }
-
-            long hours = diffMinutes / 60;
-            long minutes = diffMinutes % 60;
-
-            System.out.printf("\nResult: %d HOUR%s %d MINUTE%s\n", 
-                            hours, hours == 1 ? "" : "S", 
-                            minutes, minutes == 1 ? "" : "S");
-        } catch (NumberFormatException e) {
-            System.out.println("\nError processing times.");
+        } else if (remainingSeconds == 0) {
+            System.out.println("Timer already finished. Reset if you want to start again.");
+            System.out.println("\n");
+        } else {
+            System.out.println("Timer is already paused.");
+            System.out.println("\n");
         }
     }
 
-    /* ================= 3. DURATION BETWEEN DATES ================= */
-
-    private static void durationBetweenDates() {
-        // Get valid start date
-        String startDateStr;
-        while (true) {
-            System.out.print("\nStart date (DD/MM/YYYY) or '0' to go back: ");
-            startDateStr = ConsoleUtils.scanner.nextLine().trim();
-            if (startDateStr.equals("0")) return;
-            if (isValidDate(startDateStr)) break;
-            System.out.println("\nInvalid date. Use DD/MM/YYYY format");
+    private static void resume() {
+        if (paused && remainingSeconds > 0) {
+            paused = false;
+            System.out.println("Timer resumed. Remaining: " + formatTime(remainingSeconds));
+            System.out.println("\n");
+        } else if (remainingSeconds == 0) {
+            System.out.println("Timer already finished. Reset first to start again.");
+            System.out.println("\n");
+        } else {
+            System.out.println("Timer is already running. Remaining: " + formatTime(remainingSeconds));
+            System.out.println("\n");
         }
+    }
 
-        // Get valid end date
-        String endDateStr;
+    private static void reset() {
+        remainingSeconds = initialSeconds;
+        paused = false;
+        finished = false;
+        System.out.println("Timer reset to " + formatTime(remainingSeconds) + ".");
+        System.out.println("\n");
+    }
+
+    private static void stop() {
+        running = false;
+        paused = false;
+        finished = false;
+        System.out.println("Timer stopped.");
+        System.out.println("\n");
+    }
+
+    /* ================= PRESETS + INPUT ================= */
+
+    // New menu: presets + custom time
+    private static int getDurationFromPresetsOrCustom() {
         while (true) {
-            System.out.print("End date (DD/MM/YYYY) or '0' to go back: ");
-            endDateStr = ConsoleUtils.scanner.nextLine().trim();
-            if (endDateStr.equals("0")) return;
-            if (isValidDate(endDateStr)) break;
-            System.out.println("\nInvalid date. Use DD/MM/YYYY format");
-        }
+            System.out.println("\nChoose preset time:");
+            System.out.println("1. 00:01:00  (1 minute)");
+            System.out.println("2. 00:05:00  (5 minutes)");
+            System.out.println("3. 00:10:00  (10 minutes)");
+            System.out.println("4. 00:15:00  (15 minutes)");
+            System.out.println("5. 00:30:00  (30 minutes)");
+            System.out.println("6. 01:00:00  (1 hour)");
+            System.out.println("7. --:--:--  (Custom time)");
+            System.out.println("0. Cancel");
+            System.out.print("\nChoose option: ");
 
-        // Get output format
-        String outputType;
-        while (true) {
-            System.out.println("\nOutput format:");
-            System.out.println("1. Full breakdown");
-            System.out.println("2. Days only");
-            System.out.println("3. Weeks only");
-            System.out.println("4. Months only");
-            System.out.println("5. Years only");
-            System.out.print("\nChoose (1-5) or '0' to go back: ");
-            outputType = ConsoleUtils.scanner.nextLine().trim();
-            if (outputType.equals("0")) return;
-            if (outputType.matches("[1-5]")) break;
-            System.out.println("\nInvalid choice. Enter 1-5 or 0 to go back.");
-        }
+            String choice = ConsoleUtils.scanner.nextLine();
 
-        try {
-            LocalDate start = LocalDate.parse(startDateStr, DATE_FORMAT);
-            LocalDate end = LocalDate.parse(endDateStr, DATE_FORMAT);
-
-            if (end.isBefore(start)) {
-                System.out.println("\nEnd date must be after start date");
-                return;
-            }
-
-            long totalDays = ChronoUnit.DAYS.between(start, end);
-            long totalWeeks = totalDays / 7;
-            long totalMonths = ChronoUnit.MONTHS.between(start, end);
-            long totalYears = ChronoUnit.YEARS.between(start, end);
-
-            switch (outputType) {
-                case "2":
-                    System.out.printf("%d DAYS\n", totalDays);
-                    break;
-                case "3":
-                    System.out.printf("%d WEEKS\n", totalWeeks);
-                    break;
-                case "4":
-                    System.out.printf("%d MONTHS\n", totalMonths);
-                    break;
-                case "5":
-                    System.out.printf("%d YEARS\n", totalYears);
-                    break;
-                case "1":
+            switch (choice) {
+                case "1": return 60;        // 1 minute
+                case "2": return 5 * 60;    // 5 minutes
+                case "3": return 10 * 60;   // 10 minutes
+                case "4": return 15 * 60;   // 15 minutes
+                case "5": return 30 * 60;   // 30 minutes
+                case "6": return 60 * 60;   // 1 hour
+                case "7": return getDurationInSeconds(); // custom time (existing menu)
+                case "0": return 0;         // cancel
                 default:
-                    System.out.println(buildParallelBreakdown(start, end));
-                    break;
+                    System.out.println("Invalid option.");
             }
-        } catch (Exception e) {
-            System.out.println("\nError processing dates.");
         }
     }
 
-    /* ================= VALIDATION HELPERS ================= */
+    // Existing custom input menu
+    private static int getDurationInSeconds() {
+        System.out.println("\nChoose time unit:");
+        System.out.println("1. Hours");
+        System.out.println("2. Minutes");
+        System.out.println("3. Seconds");
+        System.out.println("0. Cancel");
+        System.out.print("\nChoose option: ");
 
-    private static boolean isValidTime(String timeStr) {
+        String choice = ConsoleUtils.scanner.nextLine();
+        int multiplier;
+        String label;
+
+        switch (choice) {
+            case "1" -> { multiplier = 3600; label = "hours"; }
+            case "2" -> { multiplier = 60; label = "minutes"; }
+            case "3" -> { multiplier = 1; label = "seconds"; }
+            case "0" -> { return 0; }
+            default -> {
+                System.out.println("Invalid option.");
+                return 0;
+            }
+        }
+
+        System.out.print("Enter number of " + label + ": ");
         try {
-            String[] parts = timeStr.split(":");
-            if (parts.length != 2) return false;
-            
-            int hour = Integer.parseInt(parts[0]);
-            int minute = Integer.parseInt(parts[1]);
-            
-            return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+            int value = Integer.parseInt(ConsoleUtils.scanner.nextLine());
+            if (value <= 0) throw new NumberFormatException();
+            return value * multiplier;
         } catch (NumberFormatException e) {
-            return false;
+            System.out.println("Invalid number.");
+            return 0;
         }
     }
 
-    private static boolean isValidDate(String dateStr) {
-        try {
-            LocalDate.parse(dateStr, DATE_FORMAT);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+    /* ================= DISPLAY ================= */
 
-    /* ================= HELPER METHODS ================= */
-
-    private static String buildParallelBreakdown(LocalDate start, LocalDate end) {
-        long years = ChronoUnit.YEARS.between(start, end);
-        long months = ChronoUnit.MONTHS.between(start, end);
-        long days = ChronoUnit.DAYS.between(start, end);
-        long weeks = days / 7;
-        long hours = days * 24;
-
-        StringBuilder sb = new StringBuilder();
-
-        if (years > 0) sb.append(years).append(years == 1 ? " YEAR\n" : " YEARS\n");
-        if (months > 0) sb.append(months).append(months == 1 ? " MONTH\n" : " MONTHS\n");
-        if (weeks > 0) sb.append(weeks).append(weeks == 1 ? " WEEK\n" : " WEEKS\n");
-        if (days > 0) sb.append(days).append(days == 1 ? " DAY\n" : " DAYS\n");
-
-        if (sb.length() == 0) sb.append("0 DAYS\n");
-
-        sb.append(hours).append(hours == 1 ? " HOUR" : " HOURS");
-
-        return sb.toString();
+    private static String formatTime(int totalSeconds) {
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int seconds = totalSeconds % 60;
+        return String.format("%02dh %02dm %02ds", hours, minutes, seconds);
     }
 }
