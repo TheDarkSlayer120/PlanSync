@@ -27,6 +27,8 @@ public class PlanSyncCalendar {
                 case "4" -> { return Navigation.TIMER; }
                 case "5" -> { return Navigation.STOPWATCH; }
                 case "6" -> { return Navigation.TIME_CALCULATOR; }
+                case "7" -> { return Navigation.ACTIVE_TASKS; }
+                case "8" -> { return Navigation.COMPLETED_TASKS; }
                 case "0" -> { return Navigation.MAIN; }
                 default -> System.out.println("Invalid option.");
             }
@@ -42,6 +44,8 @@ public class PlanSyncCalendar {
         System.out.println("\n4. Go to Timer");
         System.out.println("5. Go to Stopwatch");
         System.out.println("6. Go to Time Calculator");
+        System.out.println("7. Go to Active Tasks");
+        System.out.println("8. Go to Completed Tasks");
         System.out.println("0. Main Menu");
         System.out.println();
 
