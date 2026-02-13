@@ -55,11 +55,12 @@ public class PlanSyncActiveTasks {
             System.out.println("1. Display Active Tasks");
             System.out.println("2. Display Active Recurring");
             System.out.println("3. Add a New Task");
-            System.out.println("\n4. Go to Timer");
-            System.out.println("5. Go to Stopwatch");
-            System.out.println("6. Go to Time Calculator");
-            System.out.println("7. Go to Calendar");
-            System.out.println("8. Go to Completed Tasks");
+            System.out.println("4. Delete a Task");
+            System.out.println("\n5. Go to Timer");
+            System.out.println("6. Go to Stopwatch");
+            System.out.println("7. Go to Time Calculator");
+            System.out.println("8. Go to Calendar");
+            System.out.println("9. Go to Completed Tasks");
             System.out.println("0. Main Menu");
             System.out.print("\nChoose Option: ");
 
@@ -72,11 +73,12 @@ public class PlanSyncActiveTasks {
                 }
                 case "2" -> showRecurringTasks();
                 case "3" -> addTaskMenu();
-                case "4" -> { saveAll(); return Navigation.TIMER; }
-                case "5" -> { saveAll(); return Navigation.STOPWATCH; }
-                case "6" -> { saveAll(); return Navigation.TIME_CALCULATOR; }
-                case "7" -> { saveAll(); return Navigation.CALENDAR; }
-                case "8" -> { saveAll(); return Navigation.COMPLETED_TASKS; }
+                case "4" -> deleteTaskMenu();
+                case "5" -> { saveAll(); return Navigation.TIMER; }
+                case "6" -> { saveAll(); return Navigation.STOPWATCH; }
+                case "7" -> { saveAll(); return Navigation.TIME_CALCULATOR; }
+                case "8" -> { saveAll(); return Navigation.CALENDAR; }
+                case "9" -> { saveAll(); return Navigation.COMPLETED_TASKS; }
                 case "0" -> { saveAll(); return Navigation.MAIN; }
                 default -> System.out.println("Invalid option.");
             }
@@ -295,38 +297,74 @@ public class PlanSyncActiveTasks {
         displayActiveTasks();
 
         while (true) {
-            System.out.print("\nChoose Task to Delete (e.g. TASK1), or Enter 0 to Cancel: ");
-            String input = ConsoleUtils.scanner.nextLine().trim();
-            if (input.equals("0")) return;
+            System.out.print(
+                "\nChoose Task(s) to Delete (e.g. TASK1 TASK2 TASK3), or Enter 0 to Cancel: "
+            );
+            String inputLine = ConsoleUtils.scanner.nextLine().trim();
+            if (inputLine.equals("0")) return;
 
-            int index = parseTaskIndex(input, "TASK");
-            if (index == -1 || index > activeTasks.size()) {
-                System.out.println("Invalid Task ID.");
+            String[] tokens = inputLine.split("\\s+");
+            if (tokens.length == 0) {
+                System.out.println("No Task IDs entered.");
                 continue;
             }
 
-            ActiveTask target = getActiveByIndex(index);
-            if (target == null) {
-                System.out.println("Task not found.");
-                return;
+            // Collect valid targets in order, avoid duplicates
+            Map<String, ActiveTask> toDelete = new LinkedHashMap<>();
+            boolean anyInvalid = false;
+
+            for (String token : tokens) {
+                int idx = parseTaskIndex(token, "TASK");
+                if (idx == -1 || idx > activeTasks.size()) {
+                    System.out.println("Invalid Task ID: " + token);
+                    anyInvalid = true;
+                    continue;
+                }
+                ActiveTask target = getActiveByIndex(idx);
+                if (target == null) {
+                    System.out.println("Task not found for ID: " + token);
+                    anyInvalid = true;
+                    continue;
+                }
+                toDelete.putIfAbsent(target.id, target);
+            }
+
+            if (toDelete.isEmpty()) {
+                if (anyInvalid) {
+                    System.out.println("No valid Task IDs entered. Try again.");
+                    continue;
+                } else {
+                    System.out.println("No tasks selected.");
+                    return;
+                }
+            }
+
+            // Show summary and confirm
+            System.out.println("\nYou are about to delete the following tasks:");
+            for (ActiveTask t : toDelete.values()) {
+                System.out.println("- " + t.name + " (ID: " + t.id + ")");
             }
 
             System.out.print("\nAre You Sure? [Y/N]: ");
             String confirm = ConsoleUtils.scanner.nextLine().trim().toUpperCase(Locale.ROOT);
-            if (confirm.equals("Y")) {
-                activeTasks.remove(target.id);
-                saveAll();
-                System.out.println("\nTask Deleted! ");
-                System.out.println("(" + target.name + ")");
-                System.out.println("\nUpdated ACTIVE TASKS:\n");
-                displayActiveTasks();
-                return;
-            } else {
+            if (!confirm.equals("Y")) {
                 System.out.println("Cancelled.");
                 return;
             }
+
+            // Delete all selected tasks
+            for (String id : toDelete.keySet()) {
+                activeTasks.remove(id);
+            }
+            saveAll();
+
+            System.out.println("\nTask(s) Deleted!");
+            System.out.println("\nUpdated ACTIVE TASKS:\n");
+            displayActiveTasks();
+            return;
         }
     }
+
 
     private static void deleteRecurringTask() {
         if (recurringTasks.isEmpty()) {
@@ -337,38 +375,74 @@ public class PlanSyncActiveTasks {
         showRecurringTasks();
 
         while (true) {
-            System.out.print("\nChoose Task to Delete (e.g. TASK1), or Enter 0 to Cancel: ");
-            String input = ConsoleUtils.scanner.nextLine().trim();
-            if (input.equals("0")) return;
+            System.out.print(
+                "\nChoose Task(s) to Delete (e.g. TASK1 TASK2 TASK3), or Enter 0 to Cancel: "
+            );
+            String inputLine = ConsoleUtils.scanner.nextLine().trim();
+            if (inputLine.equals("0")) return;
 
-            int index = parseTaskIndex(input, "TASK");
-            if (index == -1 || index > recurringTasks.size()) {
-                System.out.println("Invalid Task ID.");
+            String[] tokens = inputLine.split("\\s+");
+            if (tokens.length == 0) {
+                System.out.println("No Task IDs entered.");
                 continue;
             }
 
-            RecurringTask rt = getRecurringByIndex(index);
-            if (rt == null) {
-                System.out.println("Task not found.");
-                return;
+            // Collect valid targets in order, avoid duplicates
+            Map<String, RecurringTask> toDelete = new LinkedHashMap<>();
+            boolean anyInvalid = false;
+
+            for (String token : tokens) {
+                int idx = parseTaskIndex(token, "TASK");
+                if (idx == -1 || idx > recurringTasks.size()) {
+                    System.out.println("Invalid Task ID: " + token);
+                    anyInvalid = true;
+                    continue;
+                }
+                RecurringTask target = getRecurringByIndex(idx);
+                if (target == null) {
+                    System.out.println("Task not found for ID: " + token);
+                    anyInvalid = true;
+                    continue;
+                }
+                toDelete.putIfAbsent(target.id, target);
+            }
+
+            if (toDelete.isEmpty()) {
+                if (anyInvalid) {
+                    System.out.println("No valid Task IDs entered. Try again.");
+                    continue;
+                } else {
+                    System.out.println("No tasks selected.");
+                    return;
+                }
+            }
+
+            // Show summary and confirm
+            System.out.println("\nYou are about to delete the following tasks:");
+            for (RecurringTask t : toDelete.values()) {
+                System.out.println("- " + t.name + " (ID: " + t.id + ")");
             }
 
             System.out.print("\nAre You Sure? [Y/N]: ");
             String confirm = ConsoleUtils.scanner.nextLine().trim().toUpperCase(Locale.ROOT);
-            if (confirm.equals("Y")) {
-                recurringTasks.remove(rt.id);
-                saveAll();
-                System.out.println("\nTask Deleted! ");
-                System.out.println("(" + rt.name + ")");
-                System.out.println("\nUpdated ACTIVE RECURRING:\n");
-                showRecurringTasks();
-                return;
-            } else {
+            if (!confirm.equals("Y")) {
                 System.out.println("Cancelled.");
                 return;
             }
+
+            // Delete all selected tasks
+            for (String id : toDelete.keySet()) {
+                recurringTasks.remove(id);
+            }
+            saveAll();
+
+            System.out.println("\nTask(s) Deleted!");
+            System.out.println("\nUpdated ACTIVE RECURRING:\n");
+            showRecurringTasks();
+            return;
         }
     }
+
 
     /* ================= ADD TASKS ================= */
 
