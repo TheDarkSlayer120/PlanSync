@@ -95,7 +95,7 @@ public class PlanSyncCompletedTasks {
         }
     }
 
-    /* ================= DELETE ONE ================= */
+    /* ================= DELETE MULTIPLE ================= */
 
     private static void deleteCompletedTask() {
         if (completedTasks.isEmpty()) {
@@ -103,28 +103,64 @@ public class PlanSyncCompletedTasks {
             return;
         }
 
+        displayCompletedList();
+
         while (true) {
-            System.out.print("\nChoose Task to Delete (number, e.g. 1), or Enter 0 to Cancel: ");
-            String input = ConsoleUtils.scanner.nextLine().trim();
-            if (input.equals("0")) return;
+            System.out.print(
+                "\nChoose Task(s) to Delete (e.g. 1 2 3), or Enter 0 to Cancel: "
+            );
+            String inputLine = ConsoleUtils.scanner.nextLine().trim();
+            if (inputLine.equals("0")) return;
 
-            int idx;
-            try {
-                idx = Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid number.");
+            String[] tokens = inputLine.split("\\s+");
+            if (tokens.length == 0) {
+                System.out.println("No task numbers entered.");
                 continue;
             }
 
-            if (idx < 1 || idx > completedTasks.size()) {
-                System.out.println("Invalid index.");
-                continue;
+            // Collect valid targets in order, avoid duplicates
+            Map<String, CompletedTask> toDelete = new LinkedHashMap<>();
+            boolean anyInvalid = false;
+
+            for (String token : tokens) {
+                int idx;
+                try {
+                    idx = Integer.parseInt(token);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number: " + token);
+                    anyInvalid = true;
+                    continue;
+                }
+
+                if (idx < 1 || idx > completedTasks.size()) {
+                    System.out.println("Invalid index: " + token);
+                    anyInvalid = true;
+                    continue;
+                }
+
+                CompletedTask target = getCompletedByIndex(idx);
+                if (target == null) {
+                    System.out.println("Task not found for index: " + token);
+                    anyInvalid = true;
+                    continue;
+                }
+                toDelete.putIfAbsent(target.id, target);
             }
 
-            CompletedTask target = getCompletedByIndex(idx);
-            if (target == null) {
-                System.out.println("Task not found.");
-                return;
+            if (toDelete.isEmpty()) {
+                if (anyInvalid) {
+                    System.out.println("No valid task numbers entered. Try again.");
+                    continue;
+                } else {
+                    System.out.println("No tasks selected.");
+                    return;
+                }
+            }
+
+            // Show summary and confirm
+            System.out.println("\nYou are about to delete the following tasks:");
+            for (CompletedTask t : toDelete.values()) {
+                System.out.println("- " + t.name + " (Index: " + getTaskIndex(t) + ")");
             }
 
             System.out.print("\nAre You Sure? [Y/N]: ");
@@ -134,10 +170,14 @@ public class PlanSyncCompletedTasks {
                 return;
             }
 
-            completedTasks.remove(target.id);
+            // Delete all selected tasks
+            for (String id : toDelete.keySet()) {
+                completedTasks.remove(id);
+            }
             saveCompleted();
-            System.out.println("\nTask Deleted!");
-            System.out.println("(" + target.name + ")");
+
+            System.out.println("\nTask(s) Deleted!");
+            displayCompletedList();
             return;
         }
     }
@@ -170,6 +210,15 @@ public class PlanSyncCompletedTasks {
             if (i++ == index) return t;
         }
         return null;
+    }
+
+    private static int getTaskIndex(CompletedTask task) {
+        int i = 1;
+        for (CompletedTask t : completedTasks.values()) {
+            if (t.id.equals(task.id)) return i;
+            i++;
+        }
+        return -1;
     }
 
     /* ================= PERSISTENCE ================= */
