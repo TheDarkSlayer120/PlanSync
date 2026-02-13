@@ -63,6 +63,14 @@ public class PlanSyncStopwatch {
                         displayRunning = false;
                         return Navigation.CALENDAR;
                     }
+                    case "5" -> {                                // Go to Active Tasks
+                        displayRunning = false;
+                        return Navigation.ACTIVE_TASKS;
+                    }
+                    case "6" -> {                                // Go to Completed Tasks
+                        displayRunning = false;
+                        return Navigation.COMPLETED_TASKS;
+                    }
                     case "0" -> {                                // Main menu
                         displayRunning = false;
                         return Navigation.MAIN;
@@ -104,6 +112,8 @@ public class PlanSyncStopwatch {
         System.out.println("\n2. Go to Timer");
         System.out.println("3. Go to Time Calculator");
         System.out.println("4. Go to Calendar");
+        System.out.println("5. Go to Active Tasks");
+        System.out.println("6. Go to Completed Tasks");
         System.out.println("0. Main Menu");
         System.out.print("\nChoose option: ");
     }
