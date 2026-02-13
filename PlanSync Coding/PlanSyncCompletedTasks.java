@@ -18,7 +18,7 @@ public class PlanSyncCompletedTasks {
     private static final Map<String, CompletedTask> completedTasks = new LinkedHashMap<>();
 
     static class CompletedTask {
-        String id;          // e.g. C1
+        String id;          
         String name;
         String description;
         LocalDate deadline;
