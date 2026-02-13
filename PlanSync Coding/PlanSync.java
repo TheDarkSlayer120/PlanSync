@@ -16,7 +16,7 @@ public class PlanSync {
             };
         }
 
-        System.out.println("\nSee you next time!");
+        System.out.println("\nClosing PlanSync...");
         System.out.println("\n");
     }
 
