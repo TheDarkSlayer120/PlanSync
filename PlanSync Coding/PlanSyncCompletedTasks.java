@@ -1,24 +1,21 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class PlanSyncCompletedTasks {
 
     private static final String COMPLETED_FILE = "completed_tasks.txt";
-    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter DATE_FMT =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     // Keep order stable
-    private static final Map<String, CompletedTask> completedTasks = new LinkedHashMap<>();
+    private static final Map<String, CompletedTask> completedTasks =
+            new LinkedHashMap<>();
 
-    static class CompletedTask {
-        String id;          
+    public static class CompletedTask {
+        String id;
         String name;
         String description;
         LocalDate deadline;
@@ -32,44 +29,87 @@ public class PlanSyncCompletedTasks {
             displayCompletedList();
 
             System.out.println("\n--- COMPLETED TASKS ---");
-            System.out.println("1. Delete Completed Task");
+            System.out.println("1. Delete Completed Task(s)");
             System.out.println("2. Empty Whole List");
-            System.out.println();
-            System.out.println("3. Go to Timer");
-            System.out.println("4. Go to Stopwatch");
-            System.out.println("5. Go to Time Calculator");
-            System.out.println("6. Go to Calendar");
-            System.out.println("7. Go to Active Tasks");
+            System.out.println("\n3. Go to Active Tasks");
+            System.out.println("4. Go to Recurring Tasks");
+            System.out.println("\n5. Go to Timer");
+            System.out.println("6. Go to Stopwatch");
+            System.out.println("7. Go to Time Calculator");
+            System.out.println("8. Go to Calendar");
             System.out.println("0. Main Menu");
             System.out.print("\nChoose Option: ");
 
             String choice = ConsoleUtils.scanner.nextLine().trim();
 
             switch (choice) {
-                case "1" -> deleteCompletedTask();
-                case "2" -> emptyCompletedList();
-                case "3" -> { saveCompleted(); return Navigation.TIMER; }
-                case "4" -> { saveCompleted(); return Navigation.STOPWATCH; }
-                case "5" -> { saveCompleted(); return Navigation.TIME_CALCULATOR; }
-                case "6" -> { saveCompleted(); return Navigation.CALENDAR; }
-                case "7" -> { saveCompleted(); return Navigation.ACTIVE_TASKS; }
+                case "1" -> PlanSyncDeleteCompletedTasks.deleteCompletedTasks();
+                case "2" -> PlanSyncDeleteCompletedTasks.emptyCompletedTasks();
+                case "3" -> { saveCompleted(); return Navigation.ACTIVE_TASKS; }
+                case "4" -> { saveCompleted(); return Navigation.RECURRING_TASKS; }
+                case "5" -> { saveCompleted(); return Navigation.TIMER; }
+                case "6" -> { saveCompleted(); return Navigation.STOPWATCH; }
+                case "7" -> { saveCompleted(); return Navigation.TIME_CALCULATOR; }
+                case "8" -> { saveCompleted(); return Navigation.CALENDAR; }
                 case "0" -> { saveCompleted(); return Navigation.MAIN; }
                 default -> System.out.println("Invalid option.");
             }
         }
     }
 
+    /* ================= PUBLIC API ================= */
+
+    public static Map<String, CompletedTask> getCompletedTasks() {
+        return completedTasks;
+    }
+
+    public static CompletedTask getByIndex(int index) {
+        int i = 1;
+        for (CompletedTask t : completedTasks.values()) {
+            if (i++ == index) return t;
+        }
+        return null;
+    }
+
+    public static void removeById(String id) {
+        completedTasks.remove(id);
+    }
+
+    public static void clearAll() {
+        completedTasks.clear();
+    }
+
+    public static void addCompleted(String name, String description,
+                                    LocalDate deadline, LocalDate completedOn) {
+        loadCompleted();
+
+        String id = "C" + (completedTasks.size() + 1);
+
+        CompletedTask t = new CompletedTask();
+        t.id = id;
+        t.name = name;
+        t.description = description;
+        t.deadline = deadline;
+        t.completedOn = completedOn;
+
+        completedTasks.put(t.id, t);
+        saveCompleted();
+    }
+
     /* ================= DISPLAY ================= */
 
-    private static void displayCompletedList() {
+    public static void displayCompletedList() {
+        loadCompleted();
+
         LocalDate today = LocalDate.now();
 
         System.out.println("\n--- COMPLETED TASKS ---\n");
-        System.out.println("======================================================================");
+        System.out.println("==========================================================================");
         System.out.println("(Format: | # | Task Name | Task Description | Deadline | Date Completed |)");
-        System.out.println("======================================================================\n");
+        System.out.println("==========================================================================\n");
 
-        System.out.printf("\t\t<<COMPLETED TASKS:>> (TODAY: %s)%n", today.format(DATE_FMT));
+        System.out.printf("\t\t<<COMPLETED TASKS:>> (TODAY: %s)%n",
+                today.format(DATE_FMT));
 
         if (completedTasks.isEmpty()) {
             System.out.println("\nNo completed tasks yet.");
@@ -78,157 +118,29 @@ public class PlanSyncCompletedTasks {
 
         int index = 1;
         for (CompletedTask t : completedTasks.values()) {
-            String line = String.format(
-                    "[%d] %s -> %s -> {%s} -> [COMPLETED %s] = [V]",
-                    index,
+
+            System.out.println("===========================================================================================================");
+            System.out.printf("[%d] %s -> %s -> {%s} -> [COMPLETED %s] = [V]%n",
+                    index++,
                     t.name,
                     t.description,
                     t.deadline != null ? t.deadline.format(DATE_FMT) : "--/--/----",
                     t.completedOn != null ? t.completedOn.format(DATE_FMT) : "--/--/----"
             );
-            System.out.println("===========================================================================================================");
-            System.out.println(line);
-            if (index == completedTasks.size()) {
-                System.out.println("===========================================================================================================");
-            }
-            index++;
         }
+
+        System.out.println("===========================================================================================================");
     }
 
-    /* ================= DELETE MULTIPLE ================= */
-
-    private static void deleteCompletedTask() {
-        if (completedTasks.isEmpty()) {
-            System.out.println("\nNo completed tasks to delete.");
-            return;
-        }
-
-        displayCompletedList();
-
-        while (true) {
-            System.out.print(
-                "\nChoose Task(s) to Delete (e.g. 1 2 3), or Enter 0 to Cancel: "
-            );
-            String inputLine = ConsoleUtils.scanner.nextLine().trim();
-            if (inputLine.equals("0")) return;
-
-            String[] tokens = inputLine.split("\\s+");
-            if (tokens.length == 0) {
-                System.out.println("No task numbers entered.");
-                continue;
-            }
-
-            // Collect valid targets in order, avoid duplicates
-            Map<String, CompletedTask> toDelete = new LinkedHashMap<>();
-            boolean anyInvalid = false;
-
-            for (String token : tokens) {
-                int idx;
-                try {
-                    idx = Integer.parseInt(token);
-                } catch (NumberFormatException e) {
-                    System.out.println("Invalid number: " + token);
-                    anyInvalid = true;
-                    continue;
-                }
-
-                if (idx < 1 || idx > completedTasks.size()) {
-                    System.out.println("Invalid index: " + token);
-                    anyInvalid = true;
-                    continue;
-                }
-
-                CompletedTask target = getCompletedByIndex(idx);
-                if (target == null) {
-                    System.out.println("Task not found for index: " + token);
-                    anyInvalid = true;
-                    continue;
-                }
-                toDelete.putIfAbsent(target.id, target);
-            }
-
-            if (toDelete.isEmpty()) {
-                if (anyInvalid) {
-                    System.out.println("No valid task numbers entered. Try again.");
-                    continue;
-                } else {
-                    System.out.println("No tasks selected.");
-                    return;
-                }
-            }
-
-            // Show summary and confirm
-            System.out.println("\nYou are about to delete the following tasks:");
-            for (CompletedTask t : toDelete.values()) {
-                System.out.println("- " + t.name + " (Index: " + getTaskIndex(t) + ")");
-            }
-
-            System.out.print("\nAre You Sure? [Y/N]: ");
-            String confirm = ConsoleUtils.scanner.nextLine().trim().toUpperCase(Locale.ROOT);
-            if (!confirm.equals("Y")) {
-                System.out.println("Cancelled.");
-                return;
-            }
-
-            // Delete all selected tasks
-            for (String id : toDelete.keySet()) {
-                completedTasks.remove(id);
-            }
-            saveCompleted();
-
-            System.out.println("\nTask(s) Deleted!");
-            displayCompletedList();
-            return;
-        }
-    }
-
-    /* ================= EMPTY LIST ================= */
-
-    private static void emptyCompletedList() {
-        if (completedTasks.isEmpty()) {
-            System.out.println("\nNo completed tasks to clear.");
-            return;
-        }
-
-        System.out.print("\nAre You Sure You Want To Delete ALL Completed Tasks? [Y/N]: ");
-        String confirm = ConsoleUtils.scanner.nextLine().trim().toUpperCase(Locale.ROOT);
-        if (!confirm.equals("Y")) {
-            System.out.println("Cancelled.");
-            return;
-        }
-
-        completedTasks.clear();
-        saveCompleted();
-        System.out.println("\nAll completed tasks deleted.");
-    }
-
-    /* ================= HELPERS ================= */
-
-    private static CompletedTask getCompletedByIndex(int index) {
-        int i = 1;
-        for (CompletedTask t : completedTasks.values()) {
-            if (i++ == index) return t;
-        }
-        return null;
-    }
-
-    private static int getTaskIndex(CompletedTask task) {
-        int i = 1;
-        for (CompletedTask t : completedTasks.values()) {
-            if (t.id.equals(task.id)) return i;
-            i++;
-        }
-        return -1;
-    }
-
-    /* ================= PERSISTENCE ================= */
+    /* ================= FILE HANDLING ================= */
 
     private static void loadCompleted() {
         completedTasks.clear();
-        try (BufferedReader br = new BufferedReader(new FileReader(COMPLETED_FILE))) {
+        try (BufferedReader br =
+                     new BufferedReader(new FileReader(COMPLETED_FILE))) {
+
             String line;
             while ((line = br.readLine()) != null) {
-                // id|name|description|deadline|completedOn
                 String[] p = line.split("\\|", -1);
                 if (p.length < 5) continue;
 
@@ -236,44 +148,34 @@ public class PlanSyncCompletedTasks {
                 t.id = p[0];
                 t.name = p[1];
                 t.description = p[2];
-                t.deadline = p[3].isEmpty() ? null : LocalDate.parse(p[3], DATE_FMT);
-                t.completedOn = p[4].isEmpty() ? null : LocalDate.parse(p[4], DATE_FMT);
+                t.deadline = p[3].isEmpty() ? null :
+                        LocalDate.parse(p[3], DATE_FMT);
+                t.completedOn = p[4].isEmpty() ? null :
+                        LocalDate.parse(p[4], DATE_FMT);
 
                 completedTasks.put(t.id, t);
             }
-        } catch (IOException ignored) {
-        }
+        } catch (IOException ignored) {}
     }
 
     private static void saveCompleted() {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(COMPLETED_FILE))) {
-            for (CompletedTask t : completedTasks.values()) {
-                String deadline = t.deadline == null ? "" : t.deadline.format(DATE_FMT);
-                String completed = t.completedOn == null ? "" : t.completedOn.format(DATE_FMT);
+        try (BufferedWriter bw =
+                     new BufferedWriter(new FileWriter(COMPLETED_FILE))) {
 
-                bw.write(t.id + "|" + t.name + "|" + t.description + "|" + deadline + "|" + completed);
+            for (CompletedTask t : completedTasks.values()) {
+
+                String deadline = t.deadline == null ?
+                        "" : t.deadline.format(DATE_FMT);
+                String completed = t.completedOn == null ?
+                        "" : t.completedOn.format(DATE_FMT);
+
+                bw.write(t.id + "|" + t.name + "|" +
+                        t.description + "|" + deadline + "|" + completed);
                 bw.newLine();
             }
         } catch (IOException e) {
-            System.out.println("Error saving completed tasks: " + e.getMessage());
+            System.out.println("Error saving completed tasks: "
+                    + e.getMessage());
         }
-    }
-
-    /* ================= API FOR ACTIVE TASKS ================= */
-
-    // Call this from PlanSyncActiveTasks when marking a task complete
-    public static void addCompleted(String name, String description, LocalDate deadline, LocalDate completedOn) {
-        loadCompleted(); // refresh from file
-        String id = "C" + (completedTasks.size() + 1);
-
-        CompletedTask t = new CompletedTask();
-        t.id = id;
-        t.name = name;
-        t.description = description;
-        t.deadline = deadline;
-        t.completedOn = (completedOn != null ? completedOn : LocalDate.now());
-
-        completedTasks.put(t.id, t);
-        saveCompleted();
     }
 }
