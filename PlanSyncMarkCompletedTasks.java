@@ -7,7 +7,10 @@ public class PlanSyncMarkCompletedTasks {
 
         PlanSyncActiveTasks.displayActiveTasks();
 
-        System.out.print("Choose Task(s) to Complete (e.g. 1 2 3), or Enter 0 to Cancel: ");
+        System.out.println("\n--- MARK TASKS AS COMPLETE ---\n");
+        System.out.println("0. Cancel");
+
+        System.out.print("\nChoose Task(s) to Complete (e.g. 1 2 3): ");
         String input = ConsoleUtils.scanner.nextLine().trim();
 
         if (input.equals("0")) {
@@ -52,10 +55,8 @@ public class PlanSyncMarkCompletedTasks {
         }
 
         System.out.println();
-        System.out.println("Task(s) Marked Complete!");
-        System.out.println();
-        System.out.println("Task(s) Moved to Completed Tasks:");
-        System.out.println();
+        System.out.println("\nTask(s) Marked Complete!");
+        System.out.println("\nTask(s) Moved to Completed Tasks:");
 
         LocalDate today = LocalDate.now();
 
@@ -74,13 +75,12 @@ public class PlanSyncMarkCompletedTasks {
                     today
             );
 
-            System.out.println("- [" + task.name + "] " + task.description +
+            System.out.println("\n- [" + task.name + "] " + task.description +
                     " -> [COMPLETED " +
                     today.format(PlanSyncActiveTasks.formatter) + "]");
-            System.out.println();
         }
 
-        System.out.println("Going to Active Tasks...");
+        System.out.println("\nGoing to Active Tasks...");
         System.out.println();
     }
 }

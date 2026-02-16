@@ -37,7 +37,7 @@ public class PlanSyncCompletedTasks {
             System.out.println("6. Go to Stopwatch");
             System.out.println("7. Go to Time Calculator");
             System.out.println("8. Go to Calendar");
-            System.out.println("0. Main Menu");
+            System.out.println("\n0. Main Menu");
             System.out.print("\nChoose Option: ");
 
             String choice = ConsoleUtils.scanner.nextLine().trim();

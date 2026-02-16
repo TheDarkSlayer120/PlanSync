@@ -18,9 +18,10 @@ public class PlanSyncTimeCalculator {
             System.out.println("\n4. Go to Timer");
             System.out.println("5. Go to Stopwatch");
             System.out.println("6. Go to Calendar");
-            System.out.println("7. Go to Active Tasks");
-            System.out.println("8. Go to Completed Tasks");
-            System.out.println("0. Main Menu");
+            System.out.println("\n7. Go to Active Tasks");
+            System.out.println("8. Go to Recurring Tasks");
+            System.out.println("9. Go to Completed Tasks");
+            System.out.println("\n0. Main Menu");
             System.out.print("\nChoose option: ");
 
             switch (ConsoleUtils.scanner.nextLine()) {
@@ -31,7 +32,8 @@ public class PlanSyncTimeCalculator {
                 case "5" -> { return Navigation.STOPWATCH; }
                 case "6" -> { return Navigation.CALENDAR; }
                 case "7" -> { return Navigation.ACTIVE_TASKS; }
-                case "8" -> { return Navigation.COMPLETED_TASKS; }
+                case "8" -> { return Navigation.RECURRING_TASKS; }
+                case "9" -> { return Navigation.COMPLETED_TASKS; }
                 case "0" -> { return Navigation.MAIN; }
                 default -> System.out.println("\nInvalid option.");
             }

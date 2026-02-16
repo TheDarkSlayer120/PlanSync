@@ -4,17 +4,16 @@ public class PlanSyncAddActiveTask {
 
     public static void addActiveTask() {
 
-        System.out.print("ENTER TASK NAME: ");
+        System.out.println("\n--- ADD NEW ACTIVE TASK ---\n");
+
+        System.out.print("\nENTER TASK NAME: ");
         String name = ConsoleUtils.scanner.nextLine();
-        System.out.println();
 
-        System.out.print("ENTER TASK DESCRIPTION: ");
+        System.out.print("\nENTER TASK DESCRIPTION: ");
         String description = ConsoleUtils.scanner.nextLine();
-        System.out.println();
 
-        System.out.print("ENTER DEADLINE DATE (DD/MM/YYYY): ");
+        System.out.print("\nENTER DEADLINE DATE (DD/MM/YYYY): ");
         String dateInput = ConsoleUtils.scanner.nextLine();
-        System.out.println();
 
         LocalDate deadline = LocalDate.parse(dateInput, PlanSyncActiveTasks.formatter);
 
@@ -22,9 +21,9 @@ public class PlanSyncAddActiveTask {
                 new PlanSyncActiveTasks.Task(name, description, deadline)
         );
 
-        System.out.println("New Active Task Added!");
-        System.out.println("List Updated!");
-        System.out.println("Going to Active Tasks...");
+        System.out.println("\nNew Active Task Added!");
+        System.out.println("\nList Updated!");
+        System.out.println("\nGoing to Active Tasks...");
         System.out.println();
     }
 }

@@ -16,8 +16,11 @@ public class PlanSyncDeleteCompletedTasks {
 
         PlanSyncCompletedTasks.displayCompletedList();
 
+        System.out.println("\n--- DELETE COMPLETED TASKS ---\n");
+        System.out.println("0. Cancel");
+
         System.out.print(
-                "\nChoose Task(s) to Delete (e.g. 1 2 3), or Enter 0 to Cancel: ");
+                "\nChoose Task(s) to Delete (e.g. 1 2 3): ");
         String input = ConsoleUtils.scanner.nextLine().trim();
 
         if (input.equals("0")) return;

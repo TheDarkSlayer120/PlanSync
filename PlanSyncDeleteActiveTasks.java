@@ -6,7 +6,10 @@ public class PlanSyncDeleteActiveTasks {
 
         PlanSyncActiveTasks.displayActiveTasks();
 
-        System.out.print("Choose Task(s) to Delete (e.g. 1 2 3), or Enter 0 to Cancel: ");
+        System.out.println("\n--- DELETE ACTIVE TASKS ---\n");
+        System.out.println("0. Cancel");
+
+        System.out.print("\nChoose Task(s) to Delete (e.g. 1 2 3): ");
         String input = ConsoleUtils.scanner.nextLine();
 
         if (input.equals("0")) {
@@ -23,8 +26,7 @@ public class PlanSyncDeleteActiveTasks {
             }
         }
 
-        System.out.println();
-        System.out.println("You are about to delete the following tasks:");
+        System.out.println("\nYou are about to delete the following tasks:");
 
         for (int i : indexes) {
             System.out.println("- " +
@@ -32,8 +34,7 @@ public class PlanSyncDeleteActiveTasks {
                     " (ID: " + (i + 1) + ")");
         }
 
-        System.out.println();
-        System.out.print("Are You Sure? [Y/N]: ");
+        System.out.print("\nAre You Sure? [Y/N]: ");
         String confirm = ConsoleUtils.scanner.nextLine();
 
         if (confirm.equalsIgnoreCase("Y")) {
@@ -42,9 +43,8 @@ public class PlanSyncDeleteActiveTasks {
                 PlanSyncActiveTasks.activeTasks.remove((int) indexes.get(i));
             }
 
-            System.out.println();
-            System.out.println("Task(s) Deleted!");
-            System.out.println("Going Back to Active Tasks...");
+            System.out.println("\nTask(s) Deleted!");
+            System.out.println("\nGoing Back to Active Tasks...");
             System.out.println();
         }
     }

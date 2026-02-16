@@ -30,17 +30,14 @@ public class PlanSyncActiveTasks {
             System.out.println("2. Mark Task(s) as Complete");
             System.out.println("3. Add a New Active Task");
             System.out.println("4. Delete Active Task(s)");
-            System.out.println();
-            System.out.println("5. Go to Recurring Tasks");
+            System.out.println("\n5. Go to Recurring Tasks");
             System.out.println("6. Go to Completed Tasks");
-            System.out.println();
-            System.out.println("7. Go to Timer");
+            System.out.println("\n7. Go to Timer");
             System.out.println("8. Go to Stopwatch");
             System.out.println("9. Go to Time Calculator");
             System.out.println("10. Go to Calendar");
-            System.out.println("0. Main Menu");
-            System.out.println();
-            System.out.print("Choose Option: ");
+            System.out.println("\n0. Main Menu");
+            System.out.print("\nChoose Option: ");
 
             String choice = ConsoleUtils.scanner.nextLine();
 
