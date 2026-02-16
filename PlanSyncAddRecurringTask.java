@@ -1,14 +1,24 @@
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 public class PlanSyncAddRecurringTask {
+
+    private static final DateTimeFormatter TIME_FMT =
+            DateTimeFormatter.ofPattern("HH:mm");
+
+    private static final DateTimeFormatter DATE_FMT =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public static void addRecurringTask() {
 
         System.out.println("\n--- ADD NEW RECURRING TASK ---\n");
 
-        System.out.print("\nENTER TASK NAME: ");
-        String name = ConsoleUtils.scanner.nextLine();
+        System.out.print("ENTER TASK NAME: ");
+        String name = ConsoleUtils.scanner.nextLine().trim();
 
-        System.out.print("\nENTER TASK DESCRIPTION: ");
-        String description = ConsoleUtils.scanner.nextLine();
+        System.out.print("ENTER TASK DESCRIPTION: ");
+        String description = ConsoleUtils.scanner.nextLine().trim();
 
         System.out.println("\n==========");
         System.out.println("1. DAILY");
@@ -18,32 +28,98 @@ public class PlanSyncAddRecurringTask {
         System.out.println("==========");
         System.out.print("\nChoose: ");
 
-        int choice = Integer.parseInt(ConsoleUtils.scanner.nextLine());
-        System.out.println();
+        String choice = ConsoleUtils.scanner.nextLine().trim();
 
-        String frequency = switch (choice) {
-            case 1 -> "DAILY";
-            case 2 -> "WEEKLY";
-            case 3 -> "MONTHLY";
-            case 4 -> "YEARLY";
-            default -> "DAILY";
-        };
+        String timeDate = "";
+        String frequency = "";
 
-        System.out.print("\nTIME (HH:MM): ");
-        String time = ConsoleUtils.scanner.nextLine();
+        switch (choice) {
 
-        System.out.print("\nDAY OF WEEK (e.g. FRIDAY): ");
-        String day = ConsoleUtils.scanner.nextLine();
+            /* ================= DAILY ================= */
 
-        String timeDate = time + " " + day;
+            case "1" -> {
+                frequency = "DAILY";
+
+                System.out.print("TIME (HH:MM): ");
+                LocalTime time = LocalTime.parse(
+                        ConsoleUtils.scanner.nextLine().trim(),
+                        TIME_FMT
+                );
+
+                timeDate = time.format(TIME_FMT);
+            }
+
+            /* ================= WEEKLY ================= */
+
+            case "2" -> {
+                frequency = "WEEKLY";
+
+                System.out.print("TIME (HH:MM): ");
+                LocalTime time = LocalTime.parse(
+                        ConsoleUtils.scanner.nextLine().trim(),
+                        TIME_FMT
+                );
+
+                System.out.print("DAY OF WEEK (e.g. MONDAY): ");
+                String day = ConsoleUtils.scanner.nextLine().trim().toUpperCase();
+
+                timeDate = time.format(TIME_FMT) + " " + day;
+            }
+
+            /* ================= MONTHLY ================= */
+
+            case "3" -> {
+                frequency = "MONTHLY";
+
+                System.out.print("DAY OF MONTH (1-31): ");
+                String dayOfMonth = ConsoleUtils.scanner.nextLine().trim();
+
+                System.out.print("TIME (HH:MM): ");
+                LocalTime time = LocalTime.parse(
+                        ConsoleUtils.scanner.nextLine().trim(),
+                        TIME_FMT
+                );
+
+                timeDate = time.format(TIME_FMT) + " DAY-" + dayOfMonth;
+            }
+
+            /* ================= YEARLY ================= */
+
+            case "4" -> {
+                frequency = "YEARLY";
+
+                System.out.print("DATE (dd/MM/yyyy): ");
+                LocalDate date = LocalDate.parse(
+                        ConsoleUtils.scanner.nextLine().trim(),
+                        DATE_FMT
+                );
+
+                System.out.print("TIME (HH:MM): ");
+                LocalTime time = LocalTime.parse(
+                        ConsoleUtils.scanner.nextLine().trim(),
+                        TIME_FMT
+                );
+
+                timeDate = time.format(TIME_FMT) + " " + date.format(DATE_FMT);
+            }
+
+            default -> {
+                System.out.println("Invalid option.");
+                return;
+            }
+        }
 
         PlanSyncRecurringTasks.recurringTasks.add(
-                new PlanSyncRecurringTasks.RecurringTask(name, description, timeDate, frequency)
+                new PlanSyncRecurringTasks.RecurringTask(
+                        name,
+                        description,
+                        timeDate,
+                        frequency
+                )
         );
 
         System.out.println("\nNew Recurring Task Added!");
-        System.out.println("\nList Updated!");
-        System.out.println("\nGoing to Recurring Tasks...");
+        System.out.println("List Updated!");
         System.out.println();
     }
 }
