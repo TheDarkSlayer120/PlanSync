@@ -33,7 +33,7 @@ public class PlanSyncAddRecurringTask {
             System.out.println("4. YEARLY");
             System.out.println("0. Cancel");
             System.out.println("==========");
-            System.out.print("\nChoose: \n");
+            System.out.print("\nChoose: ");
 
             String choice = ConsoleUtils.scanner.nextLine().trim();
 
@@ -226,6 +226,8 @@ public class PlanSyncAddRecurringTask {
                         frequency
                 )
         );
+
+        PlanSyncRecurringTasks.saveRecurring();
 
         System.out.println("\nNew Recurring Task Added!");
         System.out.println("\nList Updated!");

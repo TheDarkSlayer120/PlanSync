@@ -41,6 +41,8 @@ public class PlanSyncAddActiveTask {
                 new PlanSyncActiveTasks.Task(name, description, deadline)
         );
 
+        PlanSyncActiveTasks.saveActive();
+
         System.out.println("\nNew Active Task Added!");
         System.out.println("\nList Updated!");
         System.out.println("\nGoing to Active Tasks...\n");

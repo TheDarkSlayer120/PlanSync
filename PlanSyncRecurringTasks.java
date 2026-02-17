@@ -1,3 +1,4 @@
+import java.io.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -6,15 +7,18 @@ import java.util.ArrayList;
 
 public class PlanSyncRecurringTasks {
 
+    private static final String RECURRING_FILE = "recurring_tasks.txt";
+
     public static ArrayList<RecurringTask> recurringTasks = new ArrayList<>();
-    public static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    public static DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     /* ================= TASK CLASS ================= */
 
     public static class RecurringTask {
         String name;
         String description;
-        String timeDate;   // Stores time/date info depending on frequency
+        String timeDate;
         String frequency;
 
         public RecurringTask(String name,
@@ -31,6 +35,8 @@ public class PlanSyncRecurringTasks {
     /* ================= NAVIGATION LOOP ================= */
 
     public static Navigation run() {
+
+        loadRecurring();
 
         while (true) {
 
@@ -58,18 +64,25 @@ public class PlanSyncRecurringTasks {
                     PlanSyncDeleteRecurringTasks.deleteRecurringTasks();
                     break;
                 case "4":
+                    saveRecurring();
                     return Navigation.ACTIVE_TASKS;
                 case "5":
+                    saveRecurring();
                     return Navigation.COMPLETED_TASKS;
                 case "6":
+                    saveRecurring();
                     return Navigation.TIMER;
                 case "7":
+                    saveRecurring();
                     return Navigation.STOPWATCH;
                 case "8":
+                    saveRecurring();
                     return Navigation.TIME_CALCULATOR;
                 case "9":
+                    saveRecurring();
                     return Navigation.CALENDAR;
                 case "0":
+                    saveRecurring();
                     return Navigation.MAIN;
             }
         }
@@ -81,11 +94,17 @@ public class PlanSyncRecurringTasks {
 
         System.out.println("\n--- RECURRING TASKS ---");
         System.out.println("\n====================================================================================");
-        System.out.println("(Format: | TaskID | Task Name | Task Description | Time/Date | Frequency | Status |)");
+        System.out.println("(Format: | # | Task Name | Task Description | Time/Date | Frequency | Status |)");
         System.out.println("====================================================================================");
-        System.out.println("\n                <<ACTIVE RECURRING:>> (TODAY: "
+
+        System.out.println("\n<<ACTIVE RECURRING:>> (TODAY: "
                 + LocalDate.now().format(formatter) + ")");
         System.out.println("============================================================================");
+
+        if (recurringTasks.isEmpty()) {
+            System.out.println("\nNo recurring tasks found.");
+            return;
+        }
 
         int id = 1;
         LocalDate today = LocalDate.now();
@@ -98,55 +117,68 @@ public class PlanSyncRecurringTasks {
 
                 switch (task.frequency) {
 
-                    /* ================= DAILY ================= */
                     case "DAILY" -> status = "REPEATS DAILY";
 
-                    /* ================= WEEKLY ================= */
                     case "WEEKLY" -> {
-                        // Format: "HH:mm MONDAY"
                         String[] parts = task.timeDate.split(" ");
                         String dayName = parts[1];
                         DayOfWeek targetDay = DayOfWeek.valueOf(dayName);
 
                         int daysUntil =
-                                (targetDay.getValue() - today.getDayOfWeek().getValue() + 7) % 7;
+                                (targetDay.getValue()
+                                        - today.getDayOfWeek().getValue()
+                                        + 7) % 7;
+
                         if (daysUntil == 0) daysUntil = 7;
 
                         status = daysUntil + " DAYS UNTIL NEXT";
                     }
 
-                    /* ================= MONTHLY ================= */
                     case "MONTHLY" -> {
-                        // Only take the "DD/MM" part, ignore "(Start Month: ...)"
+
                         String datePart = task.timeDate.split(" ")[0];
                         String[] parts = datePart.split("/");
+
                         int day = Integer.parseInt(parts[0]);
                         int month = Integer.parseInt(parts[1]);
 
-                        LocalDate next = LocalDate.of(today.getYear(), month, day);
-                        if (!next.isAfter(today)) {
-                            next = next.plusMonths(1);
+                        LocalDate next;
+
+                        if (month > today.getMonthValue()) {
+                            next = LocalDate.of(today.getYear(), month, day);
+
+                        } else if (month < today.getMonthValue()) {
+                            next = LocalDate.of(today.getYear() + 1, month, day);
+
+                        } else {
+                            if (day > today.getDayOfMonth()) {
+                                next = LocalDate.of(today.getYear(), month, day);
+                            } else {
+                                next = LocalDate.of(today.getYear() + 1, month, day);
+                            }
                         }
 
                         long days = ChronoUnit.DAYS.between(today, next);
                         status = days + " DAYS UNTIL NEXT";
                     }
 
-                    /* ================= YEARLY ================= */
                     case "YEARLY" -> {
-                        // Format: "DD/MM (Start: yyyy)"
                         String[] parts = task.timeDate.split(" ");
                         String[] dateParts = parts[0].split("/");
 
                         int day = Integer.parseInt(dateParts[0]);
                         int month = Integer.parseInt(dateParts[1]);
 
-                        LocalDate next = LocalDate.of(today.getYear(), month, day);
+                        LocalDate next =
+                                LocalDate.of(today.getYear(), month, day);
+
                         if (!next.isAfter(today)) {
                             next = next.plusYears(1);
                         }
 
-                        long days = ChronoUnit.DAYS.between(today, next);
+                        long days =
+                                ChronoUnit.DAYS.between(today, next);
+
                         status = days + " DAYS UNTIL NEXT";
                     }
 
@@ -157,10 +189,17 @@ public class PlanSyncRecurringTasks {
                 status = "INVALID DATA";
             }
 
+            // 🔥 Format MONTHLY display with month name
+            String displayDate = task.timeDate;
+
+            if (task.frequency.equals("MONTHLY")) {
+                displayDate = formatMonthlyDisplay(task.timeDate);
+            }
+
             System.out.println("[" + id + "] "
                     + task.name + " -> "
                     + task.description + " -> {"
-                    + task.timeDate + "} -> ["
+                    + displayDate + "} -> ["
                     + task.frequency + "] -> ["
                     + status + "]");
 
@@ -170,5 +209,83 @@ public class PlanSyncRecurringTasks {
 
         System.out.println();
         System.out.println();
+    }
+
+    /* ================= FORMAT MONTH NAME ================= */
+
+    private static String formatMonthlyDisplay(String timeDate) {
+
+        try {
+            String datePart = timeDate.split(" ")[0];
+            String[] parts = datePart.split("/");
+
+            int day = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]);
+
+            LocalDate temp = LocalDate.of(2000, month, day);
+
+            return temp.format(DateTimeFormatter.ofPattern("d MMMM"));
+
+        } catch (Exception e) {
+            return timeDate;
+        }
+    }
+
+    /* ================= FILE HANDLING ================= */
+
+    public static void saveRecurring() {
+
+        try (BufferedWriter bw =
+                     new BufferedWriter(new FileWriter(RECURRING_FILE))) {
+
+            for (RecurringTask t : recurringTasks) {
+
+                bw.write(t.name + "|" +
+                        t.description + "|" +
+                        t.timeDate + "|" +
+                        t.frequency);
+
+                bw.newLine();
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error saving recurring tasks: "
+                    + e.getMessage());
+        }
+    }
+
+    public static void loadRecurring() {
+
+        recurringTasks.clear();
+
+        File file = new File(RECURRING_FILE);
+
+        if (!file.exists()) return;
+
+        try (BufferedReader br =
+                     new BufferedReader(new FileReader(RECURRING_FILE))) {
+
+            String line;
+
+            while ((line = br.readLine()) != null) {
+
+                String[] parts = line.split("\\|");
+
+                if (parts.length < 4) continue;
+
+                recurringTasks.add(
+                        new RecurringTask(
+                                parts[0],
+                                parts[1],
+                                parts[2],
+                                parts[3]
+                        )
+                );
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error loading recurring tasks: "
+                    + e.getMessage());
+        }
     }
 }
