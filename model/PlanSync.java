@@ -1,3 +1,4 @@
+package model;
 public class PlanSync {
 
     public static void main(String[] args) {

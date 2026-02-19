@@ -1,12 +1,13 @@
+package model;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 
-public class PlanSyncDeleteActiveTasks {
+public class PlanSyncMarkCompletedTasks {
 
-    public static void deleteActiveTasks() {
+    public static void markCompletedTasks() {
 
         if (PlanSyncActiveTasks.activeTasks.isEmpty()) {
-            System.out.println("\nNo active tasks to delete.");
+            System.out.println("\nNo active tasks to complete.");
             return;
         }
 
@@ -14,10 +15,10 @@ public class PlanSyncDeleteActiveTasks {
 
             PlanSyncActiveTasks.displayActiveTasks();
 
-            System.out.println("\n--- DELETE ACTIVE TASKS ---\n");
+            System.out.println("\n--- MARK TASKS AS COMPLETE ---\n");
             System.out.println("0. Cancel");
 
-            System.out.print("\nChoose Task(s) to Delete (e.g. 1 2 3): ");
+            System.out.print("\nChoose Task(s) to Complete (e.g. 1 2 3): ");
             String input = ConsoleUtils.scanner.nextLine().trim();
 
             if (input.equals("0")) {
@@ -52,7 +53,7 @@ public class PlanSyncDeleteActiveTasks {
                 continue;
             }
 
-            System.out.println("\nYou are about to delete the following tasks:");
+            System.out.println("\nYou are about to mark the following tasks as COMPLETE:");
 
             for (int i : indexes) {
                 System.out.println("- " +
@@ -68,17 +69,33 @@ public class PlanSyncDeleteActiveTasks {
                 return;
             }
 
-            // 🔥 CRITICAL FIX
-            Collections.sort(indexes);
+            LocalDate today = LocalDate.now();
+
+            System.out.println("\nTask(s) Marked Complete!");
+            System.out.println("\nTask(s) Moved to Completed Tasks:");
+
+            indexes.sort(Integer::compareTo);
 
             for (int i = indexes.size() - 1; i >= 0; i--) {
-                PlanSyncActiveTasks.activeTasks.remove(
-                        (int) indexes.get(i)
+
+                int index = indexes.get(i);
+
+                PlanSyncActiveTasks.Task task =
+                        PlanSyncActiveTasks.activeTasks.remove(index);
+
+                PlanSyncCompletedTasks.addCompleted(
+                        task.name,
+                        task.description,
+                        task.deadline,
+                        today
                 );
+
+                System.out.println("\n- [" + task.name + "] " + task.description +
+                        " -> [COMPLETED " +
+                        today.format(PlanSyncActiveTasks.formatter) + "]");
             }
 
-            System.out.println("\nTask(s) Deleted!");
-            System.out.println("\nGoing Back to Active Tasks...\n");
+            System.out.println("\nGoing to Active Tasks...\n");
             return;
         }
     }
