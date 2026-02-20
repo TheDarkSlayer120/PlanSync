@@ -1,4 +1,4 @@
-package model;
+package modelTerminal;
 public class PlanSync {
 
     public static void main(String[] args) {

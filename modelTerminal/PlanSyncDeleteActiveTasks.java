@@ -1,21 +1,21 @@
-package model;
+package modelTerminal;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class PlanSyncDeleteRecurringTasks {
+public class PlanSyncDeleteActiveTasks {
 
-    public static void deleteRecurringTasks() {
+    public static void deleteActiveTasks() {
 
-        if (PlanSyncRecurringTasks.recurringTasks.isEmpty()) {
-            System.out.println("\nNo recurring tasks to delete.");
+        if (PlanSyncActiveTasks.activeTasks.isEmpty()) {
+            System.out.println("\nNo active tasks to delete.");
             return;
         }
 
         while (true) {
 
-            PlanSyncRecurringTasks.displayRecurringTasks();
+            PlanSyncActiveTasks.displayActiveTasks();
 
-            System.out.println("\n--- DELETE RECURRING TASKS ---\n");
+            System.out.println("\n--- DELETE ACTIVE TASKS ---\n");
             System.out.println("0. Cancel");
 
             System.out.print("\nChoose Task(s) to Delete (e.g. 1 2 3): ");
@@ -33,7 +33,7 @@ public class PlanSyncDeleteRecurringTasks {
                     int index = Integer.parseInt(s) - 1;
 
                     if (index >= 0 &&
-                        index < PlanSyncRecurringTasks.recurringTasks.size()) {
+                        index < PlanSyncActiveTasks.activeTasks.size()) {
 
                         if (!indexes.contains(index)) {
                             indexes.add(index);
@@ -57,7 +57,7 @@ public class PlanSyncDeleteRecurringTasks {
 
             for (int i : indexes) {
                 System.out.println("- " +
-                        PlanSyncRecurringTasks.recurringTasks.get(i).name +
+                        PlanSyncActiveTasks.activeTasks.get(i).name +
                         " (ID: " + (i + 1) + ")");
             }
 
@@ -69,17 +69,17 @@ public class PlanSyncDeleteRecurringTasks {
                 return;
             }
 
-            // 🔥 Critical Fix
+            // 🔥 CRITICAL FIX
             Collections.sort(indexes);
 
             for (int i = indexes.size() - 1; i >= 0; i--) {
-                PlanSyncRecurringTasks.recurringTasks.remove(
+                PlanSyncActiveTasks.activeTasks.remove(
                         (int) indexes.get(i)
                 );
             }
 
             System.out.println("\nTask(s) Deleted!");
-            System.out.println("Going Back to Recurring Tasks...\n");
+            System.out.println("\nGoing Back to Active Tasks...\n");
             return;
         }
     }

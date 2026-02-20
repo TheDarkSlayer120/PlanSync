@@ -1,11 +1,11 @@
 package controller;
 
+import model.PlanSyncTimer;
 import views.*;
 import components.BottomNavBar;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.Time;
 
 public class AppController {
 
@@ -33,10 +33,12 @@ public class AppController {
     }
 
     private void initializeViews() {
+        PlanSyncTimer timer = new PlanSyncTimer();
 
         // Create views
         HomeView homeView = new HomeView(this);
-        TimerView timerView = new TimerView(this);
+        TimerView timerView = new TimerView(this, timer);  // This is CORRECT
+        
         StopwatchView stopwatchView = new StopwatchView(this);
         TimeCalculatorView timeCalculatorView = new TimeCalculatorView(this);
         CalendarView calendarView = new CalendarView(this);
@@ -66,6 +68,8 @@ public class AppController {
 
     public void showView(String name) {
         cardLayout.show(mainPanel, name);
+        mainPanel.revalidate();  // Forces layout recalculation
+        mainPanel.repaint();     // Redraws the view
     }
 
     // Convenience navigation methods

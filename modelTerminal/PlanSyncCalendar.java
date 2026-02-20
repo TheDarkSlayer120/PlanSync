@@ -1,4 +1,4 @@
-package model;
+package modelTerminal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;

@@ -1,4 +1,4 @@
-package model;
+package modelTerminal;
 public enum Navigation {
     MAIN,
     TIMER,
