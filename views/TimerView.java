@@ -205,7 +205,7 @@ public class TimerView extends JPanel {
             
             timer.setDuration(total);
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Enter valid numbers (0-23 for H, 0-59 for M/S).", "Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Enter valid numbers (00-23 for H, 00-59 for M/S).", "Error", JOptionPane.WARNING_MESSAGE);
         }
     }
 }
