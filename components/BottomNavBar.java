@@ -17,9 +17,28 @@ public class BottomNavBar extends JPanel {
         setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
 
         // EXACTLY same labels/actions as before
-        String[] labels = {"Timer", "Stopwatch", "Time Calculator", "Calendar", "Active", "Recurring", "Completed", "Settings"};
-        String[] actions = {"TIMER", "STOPWATCH", "TIME_CALCULATOR", "CALENDAR", 
-                           "ACTIVE", "RECURRING", "COMPLETED", "SETTINGS"};
+        String[] labels = {
+            "Home",
+            "Timer", 
+            "Stopwatch", 
+            "Time Calculator", 
+            "Calendar", 
+            "Active", 
+            "Recurring", 
+            "Completed", 
+            "Settings"
+        };
+
+        String[] actions = {
+            "HOME", 
+            "TIMER", 
+            "STOPWATCH", 
+            "TIME_CALCULATOR", 
+            "CALENDAR", 
+            "ACTIVE", 
+            "RECURRING", 
+            "COMPLETED", 
+            "SETTINGS"};
 
         for (int i = 0; i < labels.length; i++) {
             final String label = labels[i];

@@ -97,9 +97,9 @@ public class TimerView extends JPanel {
         customBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
         customBar.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 5));
 
-        hoursField = createTimeField("");
-        minutesField = createTimeField("");
-        secondsField = createTimeField("");
+        hoursField = createTimeField("00");
+        minutesField = createTimeField("00");
+        secondsField = createTimeField("00");
 
         customBar.add(new JLabel("Hours:", SwingConstants.CENTER));
         customBar.add(hoursField);
@@ -111,6 +111,7 @@ public class TimerView extends JPanel {
         JButton setButton = new JButton("SET");
         styleMainButton(setButton);
         setButton.setPreferredSize(new Dimension(70, 28));
+        setButton.setBackground(new Color(250, 250, 250));
         customBar.add(setButton);
 
         center.add(customBar);
