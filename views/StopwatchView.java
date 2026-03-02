@@ -71,7 +71,7 @@ public class StopwatchView extends JPanel {
         // ================= LAP PANEL =================
         JPanel lapPanel = new RoundedPanel(40, new Color(200, 200, 200));
         lapPanel.setLayout(new BorderLayout());
-        lapPanel.setMaximumSize(new Dimension(800, 300));
+        lapPanel.setMaximumSize(new Dimension(800, 250));
 
         lapModel = new DefaultListModel<>();
         JList<String> lapList = new JList<>(lapModel);
