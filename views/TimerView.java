@@ -43,15 +43,15 @@ public class TimerView extends JPanel {
         add(center, BorderLayout.CENTER);
 
         // ===== BIG DISPLAY PANEL =====
-        JPanel displayPanel = new JPanel();
+        JPanel displayPanel = new RoundedPanel(30);
         displayPanel.setLayout(new BorderLayout());
         displayPanel.putClientProperty("themed", true);
-        displayPanel.setPreferredSize(new Dimension(400, 120));
-        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
+        displayPanel.setPreferredSize(new Dimension(800, 120));
+        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
         displayPanel.setBorder(BorderFactory.createEmptyBorder(25, 40, 25, 40));
 
-        timeLabel = new JLabel("00:05:00", SwingConstants.CENTER);
-        timeLabel.setFont(new Font("Monospaced", Font.BOLD, 36));
+        timeLabel = new JLabel("00:01:00", SwingConstants.CENTER);
+        timeLabel.setFont(new Font("Monospaced", Font.BOLD, 48));
         displayPanel.add(timeLabel, BorderLayout.CENTER);
         center.add(displayPanel);
         center.add(Box.createVerticalStrut(20));
@@ -59,7 +59,7 @@ public class TimerView extends JPanel {
         // ===== CONTROL BUTTONS =====
         JPanel buttonRow = new JPanel(new GridLayout(1, 3, 20, 0));
         buttonRow.setOpaque(false);
-        buttonRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        buttonRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
 
         resetButton = new JButton("RESET");
         stopButton = new JButton("STOP");
@@ -72,13 +72,13 @@ public class TimerView extends JPanel {
         buttonRow.add(stopButton);
         buttonRow.add(startButton);
         center.add(buttonRow);
-        center.add(Box.createVerticalStrut(20));
+        center.add(Box.createVerticalStrut(25));
 
         // ===== PRESET BUTTONS =====
-        JPanel presetGrid = new JPanel(new GridLayout(3, 2, 5, 5));
+        JPanel presetGrid = new JPanel(new GridLayout(3, 2, 14, 12));
         presetGrid.setOpaque(false);
-        presetGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
-        presetGrid.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        presetGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 170));
+        presetGrid.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 
         addPresetButton(presetGrid, "00:01:00", 60);
         addPresetButton(presetGrid, "00:05:00", 5 * 60);
@@ -88,31 +88,52 @@ public class TimerView extends JPanel {
         addPresetButton(presetGrid, "01:00:00", 60 * 60);
 
         center.add(presetGrid);
-        center.add(Box.createVerticalStrut(20));
+        center.add(Box.createVerticalStrut(30));
 
-        // ===== CUSTOM INPUT BAR =====
-        JPanel customBar = new JPanel();
+        // ===== CUSTOM INPUT BAR (CENTERED) =====
+        JPanel customBar = new RoundedPanel(30);
         customBar.putClientProperty("themed", true);
         customBar.setBorder(BorderFactory.createEmptyBorder(12, 30, 12, 30));
-        customBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
-        customBar.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 5));
+        customBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+
+        customBar.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 10, 0, 10);
+        gbc.anchor = GridBagConstraints.CENTER;
 
         hoursField = createTimeField("00");
         minutesField = createTimeField("00");
         secondsField = createTimeField("00");
 
-        customBar.add(new JLabel("Hours:", SwingConstants.CENTER));
-        customBar.add(hoursField);
-        customBar.add(new JLabel("Minutes:", SwingConstants.CENTER));
-        customBar.add(minutesField);
-        customBar.add(new JLabel("Seconds:", SwingConstants.CENTER));
-        customBar.add(secondsField);
+        JLabel hLabel = new JLabel("Hours:");
+        JLabel mLabel = new JLabel("Minutes:");
+        JLabel sLabel = new JLabel("Seconds:");
+        Font labelFont = new Font("SansSerif", Font.BOLD, 14);
+        hLabel.setFont(labelFont);
+        mLabel.setFont(labelFont);
+        sLabel.setFont(labelFont);
+
+        gbc.gridx = 0;
+        customBar.add(hLabel, gbc);
+        gbc.gridx = 1;
+        customBar.add(hoursField, gbc);
+
+        gbc.gridx = 2;
+        customBar.add(mLabel, gbc);
+        gbc.gridx = 3;
+        customBar.add(minutesField, gbc);
+
+        gbc.gridx = 4;
+        customBar.add(sLabel, gbc);
+        gbc.gridx = 5;
+        customBar.add(secondsField, gbc);
 
         JButton setButton = new JButton("SET");
         styleMainButton(setButton);
-        setButton.setPreferredSize(new Dimension(70, 28));
-        setButton.setBackground(new Color(250, 250, 250));
-        customBar.add(setButton);
+        setButton.setPreferredSize(new Dimension(90, 32));
+        gbc.gridx = 6;
+        customBar.add(setButton, gbc);
 
         center.add(customBar);
 
@@ -124,6 +145,7 @@ public class TimerView extends JPanel {
                 timer.start();
             }
         });
+
         stopButton.addActionListener(e -> timer.stop());
         resetButton.addActionListener(e -> timer.reset());
         setButton.addActionListener(e -> applyCustomTime());
@@ -139,7 +161,13 @@ public class TimerView extends JPanel {
             @Override
             public void onFinished() {
                 SwingUtilities.invokeLater(() ->
-                        JOptionPane.showMessageDialog(TimerView.this, "Time's up!", "Timer", JOptionPane.INFORMATION_MESSAGE));
+                        JOptionPane.showMessageDialog(
+                                TimerView.this,
+                                "Time's up!",
+                                "Timer",
+                                JOptionPane.INFORMATION_MESSAGE
+                        )
+                );
             }
 
             @Override
@@ -152,37 +180,42 @@ public class TimerView extends JPanel {
             }
         });
 
-        // Default to 5 minutes
-        timer.setDuration(5 * 60);
+        // Default to 1 minute
+        timer.setDuration(1 * 60);
     }
 
     private void styleMainButton(JButton b) {
         b.setFocusPainted(false);
-        b.setBackground(new Color(230, 230, 230));
+        b.setBackground(new Color(95, 125, 195));
         b.setForeground(Color.BLACK);
         b.setFont(new Font("SansSerif", Font.BOLD, 14));
-        b.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        b.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
     }
 
+    // ✅ UPDATED: bigger + bold + readable preset text
     private void addPresetButton(JPanel parent, String label, int seconds) {
         JButton b = new JButton(label);
         b.setFocusPainted(false);
-        b.setBackground(new Color(240, 240, 240));
-        b.setForeground(Color.BLACK);
-        b.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        b.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+
+        b.setBackground(new Color(95, 125, 195));
+        b.setForeground(Color.WHITE);
+        b.setFont(new Font("Monospaced", Font.BOLD, 18));
+        b.setBorder(BorderFactory.createEmptyBorder(12, 15, 12, 15));
+
         b.addActionListener(e -> timer.setDuration(seconds));
         parent.add(b);
     }
 
+    // ✅ UPDATED: slightly larger input fields for better alignment/looks
     private JTextField createTimeField(String text) {
         JTextField field = new JTextField(text, 2);
         field.setHorizontalAlignment(JTextField.CENTER);
-        field.setFont(new Font("Monospaced", Font.BOLD, 16));
-        field.setPreferredSize(new Dimension(40, 28));
+        field.setFont(new Font("Monospaced", Font.BOLD, 18));
+        field.setPreferredSize(new Dimension(50, 32));
         field.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.GRAY, 1),
-                BorderFactory.createEmptyBorder(2, 5, 2, 5)));
+                BorderFactory.createEmptyBorder(2, 6, 2, 6)
+        ));
         return field;
     }
 
@@ -191,21 +224,27 @@ public class TimerView extends JPanel {
             int h = Integer.parseInt(hoursField.getText().trim());
             int m = Integer.parseInt(minutesField.getText().trim());
             int s = Integer.parseInt(secondsField.getText().trim());
-            
+
             if (h < 0 || m < 0 || s < 0 || m > 59 || s > 59) {
                 JOptionPane.showMessageDialog(this, "Invalid time format.", "Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            
+
             int total = h * 3600 + m * 60 + s;
             if (total <= 0) {
                 JOptionPane.showMessageDialog(this, "Time must be greater than 0.", "Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            
+
             timer.setDuration(total);
+
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Enter valid numbers (00-23 for H, 00-59 for M/S).", "Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Enter valid numbers (00-59 for Minutes/Seconds).",
+                    "Error",
+                    JOptionPane.WARNING_MESSAGE
+            );
         }
     }
 }

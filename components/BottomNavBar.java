@@ -14,7 +14,6 @@ public class BottomNavBar extends JPanel {
     private JButton activeButton;
 
     private final Color defaultColor = new Color(240, 240, 240);
-    private final Color hoverColor = new Color(220, 220, 220);
 
     public BottomNavBar(AppController controller) {
 
@@ -68,27 +67,12 @@ public class BottomNavBar extends JPanel {
         btn.setBackground(defaultColor);
         btn.setForeground(Color.BLACK);
         btn.setFont(new Font("SansSerif", Font.BOLD, 11));
+        btn.setRolloverEnabled(false);
+        btn.setOpaque(true);
+        btn.setContentAreaFilled(true);
         btn.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
         btn.putClientProperty("active", false);
-
-        // Hover effect (does NOT override active)
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                if (!(Boolean) btn.getClientProperty("active")) {
-                    btn.setBackground(hoverColor);
-                }
-            }
-
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                if (!(Boolean) btn.getClientProperty("active")) {
-                    btn.setBackground(defaultColor);
-                }
-            }
-        });
 
         btn.addActionListener(e -> controller.showView(action));
 
