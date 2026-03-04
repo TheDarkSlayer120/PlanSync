@@ -30,9 +30,9 @@ public class TimerView extends JPanel {
         setBackground(Color.WHITE);
 
         // ===== TITLE =====
-        JLabel title = new JLabel("TIMER", SwingConstants.CENTER);
+        JLabel title = new JLabel("T I M E R", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 24));
-        title.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         add(title, BorderLayout.NORTH);
 
         // ===== MAIN VERTICAL LAYOUT =====
@@ -45,7 +45,7 @@ public class TimerView extends JPanel {
         // ===== BIG DISPLAY PANEL =====
         JPanel displayPanel = new JPanel();
         displayPanel.setLayout(new BorderLayout());
-        displayPanel.setBackground(new Color(230, 230, 230));
+        displayPanel.putClientProperty("themed", true);
         displayPanel.setPreferredSize(new Dimension(400, 120));
         displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
         displayPanel.setBorder(BorderFactory.createEmptyBorder(25, 40, 25, 40));
@@ -92,7 +92,7 @@ public class TimerView extends JPanel {
 
         // ===== CUSTOM INPUT BAR =====
         JPanel customBar = new JPanel();
-        customBar.setBackground(new Color(230, 230, 230));
+        customBar.putClientProperty("themed", true);
         customBar.setBorder(BorderFactory.createEmptyBorder(12, 30, 12, 30));
         customBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
         customBar.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 5));

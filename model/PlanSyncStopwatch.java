@@ -71,7 +71,7 @@ public class PlanSyncStopwatch {
 
         lapCounter++;
         String formatted = formatTime(elapsedMillis);
-        String lapText = "                                                                 LAP " + lapCounter + " : ELAPSED → " + formatted;
+        String lapText = "LAP " + lapCounter + " : ELAPSED → " + formatted;
 
         laps.add(lapText);
 

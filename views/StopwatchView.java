@@ -23,7 +23,7 @@ public class StopwatchView extends JPanel {
         this.stopwatch = new PlanSyncStopwatch();
 
         setLayout(new BorderLayout());
-        setBackground(new Color(240, 240, 240));
+        setBackground(Color.WHITE);
 
         // ================= TITLE =================
         JLabel title = new JLabel("S T O P W A T C H", SwingConstants.CENTER);
@@ -38,7 +38,8 @@ public class StopwatchView extends JPanel {
         add(center, BorderLayout.CENTER);
 
         // ================= DISPLAY PANEL =================
-        JPanel displayPanel = new RoundedPanel(40, new Color(210, 210, 210));
+        JPanel displayPanel = new RoundedPanel(30);
+        displayPanel.putClientProperty("themed", true);
         displayPanel.setLayout(new BorderLayout());
         displayPanel.setMaximumSize(new Dimension(800, 120));
 
@@ -69,16 +70,40 @@ public class StopwatchView extends JPanel {
         center.add(Box.createVerticalStrut(30));
 
         // ================= LAP PANEL =================
-        JPanel lapPanel = new RoundedPanel(40, new Color(200, 200, 200));
+        JPanel lapPanel = new RoundedPanel(40);
+        lapPanel.putClientProperty("themed", true);
         lapPanel.setLayout(new BorderLayout());
         lapPanel.setMaximumSize(new Dimension(800, 250));
+        lapPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
         lapModel = new DefaultListModel<>();
+
         JList<String> lapList = new JList<>(lapModel);
         lapList.setFont(new Font("SansSerif", Font.BOLD, 16));
+        lapList.setOpaque(false);
+        lapList.setBackground(new Color(0, 0, 0, 0));
+
+        // ✅ CENTER LAP TEXT PROPERLY
+        lapList.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(
+                    JList<?> list, Object value, int index,
+                    boolean isSelected, boolean cellHasFocus) {
+
+                JLabel label = (JLabel) super.getListCellRendererComponent(
+                        list, value, index, isSelected, cellHasFocus);
+
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                label.setOpaque(false);
+
+                return label;
+            }
+        });
 
         JScrollPane scrollPane = new JScrollPane(lapList);
         scrollPane.setBorder(null);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
 
         lapPanel.add(scrollPane, BorderLayout.CENTER);
         center.add(lapPanel);
@@ -127,7 +152,6 @@ public class StopwatchView extends JPanel {
     private JButton createButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
-        b.setBackground(new Color(180, 180, 180));
         b.setFont(new Font("SansSerif", Font.BOLD, 14));
         return b;
     }
@@ -136,19 +160,23 @@ public class StopwatchView extends JPanel {
     static class RoundedPanel extends JPanel {
 
         private final int radius;
-        private final Color bgColor;
 
-        public RoundedPanel(int radius, Color bgColor) {
+        public RoundedPanel(int radius) {
             this.radius = radius;
-            this.bgColor = bgColor;
             setOpaque(false);
         }
 
         @Override
         protected void paintComponent(Graphics g) {
+
             Graphics2D g2 = (Graphics2D) g.create();
-            g2.setColor(bgColor);
-            g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2.setColor(getBackground());
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(),
+                    radius, radius);
+
             g2.dispose();
             super.paintComponent(g);
         }
