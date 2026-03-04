@@ -34,7 +34,7 @@ public class AppController {
 
         frame = new JFrame("PlanSync");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1000, 700);
+        frame.setSize(1100, 800);
         frame.setLocationRelativeTo(null);
 
         cardLayout = new CardLayout();

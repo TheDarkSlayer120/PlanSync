@@ -35,13 +35,16 @@ public class StopwatchView extends JPanel {
         JPanel center = new JPanel();
         center.setOpaque(false);
         center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
+        center.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40)); // ✅ match Timer spacing
         add(center, BorderLayout.CENTER);
 
         // ================= DISPLAY PANEL =================
         JPanel displayPanel = new RoundedPanel(30);
         displayPanel.putClientProperty("themed", true);
         displayPanel.setLayout(new BorderLayout());
-        displayPanel.setMaximumSize(new Dimension(800, 120));
+        displayPanel.setPreferredSize(new Dimension(400, 120));
+        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140)); // ✅ allow stretch
+        displayPanel.setBorder(BorderFactory.createEmptyBorder(25, 40, 25, 40));
 
         timeLabel = new JLabel("00:00.000", SwingConstants.CENTER);
         timeLabel.setFont(new Font("Monospaced", Font.BOLD, 48));
@@ -54,7 +57,7 @@ public class StopwatchView extends JPanel {
         // ================= BUTTON ROW =================
         JPanel buttonRow = new JPanel(new GridLayout(1, 4, 20, 0));
         buttonRow.setOpaque(false);
-        buttonRow.setMaximumSize(new Dimension(800, 50));
+        buttonRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55)); // ✅ allow stretch
 
         resetButton = createButton("RESET");
         stopButton = createButton("STOP");
@@ -67,13 +70,14 @@ public class StopwatchView extends JPanel {
         buttonRow.add(startButton);
 
         center.add(buttonRow);
-        center.add(Box.createVerticalStrut(30));
+        center.add(Box.createVerticalStrut(25));
 
         // ================= LAP PANEL =================
         JPanel lapPanel = new RoundedPanel(40);
         lapPanel.putClientProperty("themed", true);
         lapPanel.setLayout(new BorderLayout());
-        lapPanel.setMaximumSize(new Dimension(800, 250));
+        lapPanel.setPreferredSize(new Dimension(400, 200));
+        lapPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300)); // ✅ allow stretch
         lapPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
         lapModel = new DefaultListModel<>();
@@ -83,7 +87,7 @@ public class StopwatchView extends JPanel {
         lapList.setOpaque(false);
         lapList.setBackground(new Color(0, 0, 0, 0));
 
-        // ✅ CENTER LAP TEXT PROPERLY
+        // Center lap text
         lapList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(
@@ -120,9 +124,7 @@ public class StopwatchView extends JPanel {
             @Override
             public void onTick(long elapsedMillis) {
                 SwingUtilities.invokeLater(() ->
-                        timeLabel.setText(
-                                PlanSyncStopwatch.formatTime(elapsedMillis)
-                        )
+                        timeLabel.setText(PlanSyncStopwatch.formatTime(elapsedMillis))
                 );
             }
 
@@ -155,5 +157,4 @@ public class StopwatchView extends JPanel {
         b.setFont(new Font("SansSerif", Font.BOLD, 14));
         return b;
     }
-
 }
