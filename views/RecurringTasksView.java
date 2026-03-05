@@ -53,9 +53,10 @@ public class RecurringTasksView extends JPanel implements RefreshableView {
 
         listPanel.add(scroll, BorderLayout.CENTER);
 
+        // ✅ Wider buttons: reduce side padding (160 was squeezing them hard)
         JPanel buttons = new JPanel(new GridLayout(1, 3, 25, 0));
         buttons.putClientProperty("themed_base", true);
-        buttons.setBorder(BorderFactory.createEmptyBorder(18, 160, 25, 160));
+        buttons.setBorder(BorderFactory.createEmptyBorder(18, 60, 25, 60));
 
         JButton deleteBtn = bigButton("DELETE RECURRING TASK");
         JButton editBtn = bigButton("EDIT RECURRING TASK");
@@ -71,7 +72,10 @@ public class RecurringTasksView extends JPanel implements RefreshableView {
 
         JPanel center = new JPanel(new BorderLayout());
         center.putClientProperty("themed_base", true);
-        center.setBorder(BorderFactory.createEmptyBorder(20, 120, 0, 120));
+
+        // ✅ match Active view: less side padding means more room
+        center.setBorder(BorderFactory.createEmptyBorder(20, 60, 0, 60));
+
         center.add(listPanel, BorderLayout.CENTER);
         center.add(buttons, BorderLayout.SOUTH);
 
@@ -83,9 +87,15 @@ public class RecurringTasksView extends JPanel implements RefreshableView {
     private JButton bigButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
+
+        // ✅ slightly smaller text so it fits cleanly
+        b.setFont(new Font("SansSerif", Font.BOLD, 16));
+
         b.setPreferredSize(new Dimension(0, 55));
-        b.setFont(new Font("SansSerif", Font.BOLD, 18));
-        b.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
+
+        // ✅ tighter padding
+        b.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+
         return b;
     }
 

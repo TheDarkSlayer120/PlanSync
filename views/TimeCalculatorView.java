@@ -5,6 +5,8 @@ import model.PlanSyncTimeCalculator;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -82,8 +84,6 @@ public class TimeCalculatorView extends JPanel {
         center.add(buildDurationBetweenTimesPanel());
         center.add(Box.createVerticalStrut(18));
         center.add(buildDurationBetweenDatesPanel());
-        // Removed the bottom decorative pill bar that sat between the content
-        // and the navigation bar.
 
         return outer;
     }
@@ -99,20 +99,17 @@ public class TimeCalculatorView extends JPanel {
         label.setFont(new Font("SansSerif", Font.BOLD, 13));
     }
 
-    // ✅ UPDATED: input typing box has a visible border
     private JTextField createPillField(String text, int columns) {
         JTextField field = new JTextField(text, columns);
         field.setHorizontalAlignment(SwingConstants.CENTER);
         field.setFont(new Font("SansSerif", Font.BOLD, 16));
         field.setMaximumSize(new Dimension(9999, 40));
 
-        // fixed colors regardless of theme
         field.setOpaque(true);
         field.setBackground(FIXED_WHITE);
         field.setForeground(FIXED_BLACK);
         field.setCaretColor(FIXED_BLACK);
 
-        // visible border around the typing box + inner padding
         field.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(170, 170, 170), 2, true),
                 BorderFactory.createEmptyBorder(8, 12, 8, 12)
@@ -129,13 +126,12 @@ public class TimeCalculatorView extends JPanel {
         return label;
     }
 
-    private JButton createActionButton(String text) {
-        JButton btn = new JButton(text);
-        btn.setFocusPainted(false);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 16));
-        btn.setBorder(BorderFactory.createEmptyBorder(10, 16, 10, 16));
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return btn;
+    private DocumentListener simpleLiveUpdate(Runnable r) {
+        return new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { r.run(); }
+            @Override public void removeUpdate(DocumentEvent e) { r.run(); }
+            @Override public void changedUpdate(DocumentEvent e) { r.run(); }
+        };
     }
 
     /* ========================= SECTION 1 ========================= */
@@ -179,39 +175,29 @@ public class TimeCalculatorView extends JPanel {
 
         durationFromNowResult = createPillResultLabel("—");
 
-        JButton calcBtn = createActionButton("CALC");
-        calcBtn.addActionListener(e -> onCalculateFromNow());
-
         row.add(wrapAsFixedWhitePill(durationFromNowField));
         row.add(arrow);
         row.add(wrapAsFixedWhitePill(durationFromNowResult));
-        row.add(Box.createHorizontalStrut(12));
-        row.add(calcBtn);
 
         body.add(row);
         panel.add(body, BorderLayout.CENTER);
 
-        setFromNowResultPreview();
+        // ✅ live update while typing
+        durationFromNowField.getDocument().addDocumentListener(
+                simpleLiveUpdate(this::tryPreviewFromNow)
+        );
+
+        tryPreviewFromNow();
         return panel;
     }
 
-    private void setFromNowResultPreview() {
+    private void tryPreviewFromNow() {
         try {
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime result = calculator.addDurationFrom(now, durationFromNowField.getText());
             durationFromNowResult.setText(calculator.formatDateTime(result));
         } catch (Exception ignored) {
             durationFromNowResult.setText("—");
-        }
-    }
-
-    private void onCalculateFromNow() {
-        try {
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime result = calculator.addDurationFrom(now, durationFromNowField.getText());
-            durationFromNowResult.setText(calculator.formatDateTime(result));
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid Duration", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -262,19 +248,19 @@ public class TimeCalculatorView extends JPanel {
 
         betweenTimesResult = createPillResultLabel("—");
 
-        JButton calcBtn = createActionButton("CALC");
-        calcBtn.addActionListener(e -> onCalculateBetweenTimes());
-
         row.add(wrapAsFixedWhitePill(startTimeField));
         row.add(bothWays);
         row.add(wrapAsFixedWhitePill(endTimeField));
         row.add(arrow);
         row.add(wrapAsFixedWhitePill(betweenTimesResult));
-        row.add(Box.createHorizontalStrut(12));
-        row.add(calcBtn);
 
         body.add(row);
         panel.add(body, BorderLayout.CENTER);
+
+        // ✅ live update while typing
+        DocumentListener dl = simpleLiveUpdate(this::tryPreviewBetweenTimes);
+        startTimeField.getDocument().addDocumentListener(dl);
+        endTimeField.getDocument().addDocumentListener(dl);
 
         tryPreviewBetweenTimes();
         return panel;
@@ -286,15 +272,6 @@ public class TimeCalculatorView extends JPanel {
             betweenTimesResult.setText(res.toDisplayString());
         } catch (Exception ignored) {
             betweenTimesResult.setText("—");
-        }
-    }
-
-    private void onCalculateBetweenTimes() {
-        try {
-            var res = calculator.durationBetweenTimes(startTimeField.getText(), endTimeField.getText());
-            betweenTimesResult.setText(res.toDisplayString());
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid Time", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -372,12 +349,9 @@ public class TimeCalculatorView extends JPanel {
         for (JRadioButton rb : new JRadioButton[]{fullBreakdownBtn, daysOnlyBtn, weeksOnlyBtn, monthsOnlyBtn, yearsOnlyBtn}) {
             rb.setOpaque(false);
             rb.setForeground(FIXED_BLACK);
+            rb.addActionListener(e -> tryPreviewBetweenDates()); // ✅ auto update on change
         }
         fullBreakdownBtn.setSelected(true);
-
-        JButton calcBtn = createActionButton("CALC");
-        calcBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        calcBtn.addActionListener(e -> onCalculateBetweenDates());
 
         chooseBox.add(chooseTitle);
         chooseBox.add(Box.createVerticalStrut(8));
@@ -386,8 +360,6 @@ public class TimeCalculatorView extends JPanel {
         chooseBox.add(weeksOnlyBtn);
         chooseBox.add(monthsOnlyBtn);
         chooseBox.add(yearsOnlyBtn);
-        chooseBox.add(Box.createVerticalStrut(10));
-        chooseBox.add(calcBtn);
 
         FixedWhiteRoundedPanel outputBox = new FixedWhiteRoundedPanel(25);
         outputBox.setLayout(new BorderLayout());
@@ -422,6 +394,11 @@ public class TimeCalculatorView extends JPanel {
 
         panel.add(contentRow, BorderLayout.CENTER);
 
+        // ✅ live update while typing dates
+        DocumentListener dl = simpleLiveUpdate(this::tryPreviewBetweenDates);
+        startDateField.getDocument().addDocumentListener(dl);
+        endDateField.getDocument().addDocumentListener(dl);
+
         tryPreviewBetweenDates();
         return panel;
     }
@@ -445,17 +422,6 @@ public class TimeCalculatorView extends JPanel {
         return PlanSyncTimeCalculator.DateOutputType.FULL_BREAKDOWN;
     }
 
-    private void onCalculateBetweenDates() {
-        try {
-            LocalDate start = calculator.parseDate(startDateField.getText());
-            LocalDate end = calculator.parseDate(endDateField.getText());
-            var type = getSelectedDateOutputType();
-            betweenDatesResultArea.setText(calculator.durationBetweenDatesDisplay(start, end, type));
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid Date", JOptionPane.WARNING_MESSAGE);
-        }
-    }
-
     /* ========================= ALWAYS-WHITE PILL WRAPPER ========================= */
 
     private JComponent wrapAsFixedWhitePill(JComponent inner) {
@@ -475,7 +441,7 @@ public class TimeCalculatorView extends JPanel {
 
         FixedWhiteRoundedPanel(int radius) {
             this.radius = radius;
-            setOpaque(false); // we paint ourselves
+            setOpaque(false);
         }
 
         @Override
@@ -488,11 +454,9 @@ public class TimeCalculatorView extends JPanel {
             int w = getWidth();
             int h = getHeight();
 
-            // background
             g2.setColor(FIXED_WHITE);
             g2.fillRoundRect(0, 0, w, h, radius, radius);
 
-            // border
             g2.setStroke(new BasicStroke(strokeWidth));
             g2.setColor(strokeColor);
             int inset = strokeWidth / 2;

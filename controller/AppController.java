@@ -5,6 +5,7 @@ import model.PlanSyncSettings;
 import model.PlanSyncActiveTasksModel;
 import model.PlanSyncCompletedTasksModel;
 import model.PlanSyncRecurringTasksModel;
+import model.PlanSyncCalendarModel;
 
 import views.*;
 import components.BottomNavBar;
@@ -27,6 +28,8 @@ public class AppController {
     private PlanSyncActiveTasksModel activeTasksModel;
     private PlanSyncCompletedTasksModel completedTasksModel;
     private PlanSyncRecurringTasksModel recurringTasksModel;
+
+    private PlanSyncCalendarModel calendarModel;
 
     private BottomNavBar navBar;
 
@@ -60,6 +63,8 @@ public class AppController {
         activeTasksModel = new PlanSyncActiveTasksModel();
         completedTasksModel = new PlanSyncCompletedTasksModel();
         recurringTasksModel = new PlanSyncRecurringTasksModel();
+
+        calendarModel = new PlanSyncCalendarModel(activeTasksModel);
     }
 
     private void initializeViews() {
@@ -70,7 +75,7 @@ public class AppController {
         TimerView timerView = new TimerView(this, timer);
         StopwatchView stopwatchView = new StopwatchView(this);
         TimeCalculatorView timeCalculatorView = new TimeCalculatorView(this);
-        CalendarView calendarView = new CalendarView(this);
+        CalendarView calendarView = new CalendarView(this, calendarModel);
 
         ActiveTasksView activeTasksView = new ActiveTasksView(this, activeTasksModel);
         AddActiveTaskView addActiveTaskView = new AddActiveTaskView(this, activeTasksModel);
@@ -132,6 +137,14 @@ public class AppController {
 
     public PlanSyncSettings getSettings() {
         return settings;
+    }
+
+    public PlanSyncActiveTasksModel getActiveTasksModel() {
+        return activeTasksModel;
+    }
+
+    public PlanSyncCalendarModel getCalendarModel() {
+        return calendarModel;
     }
 
     public void showView(String name) {

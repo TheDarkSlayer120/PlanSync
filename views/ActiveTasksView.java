@@ -53,9 +53,10 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
 
         listPanel.add(scroll, BorderLayout.CENTER);
 
+        // ✅ Wider buttons: reduce big side padding so GridLayout gets more space
         JPanel buttons = new JPanel(new GridLayout(1, 4, 20, 0));
         buttons.putClientProperty("themed_base", true);
-        buttons.setBorder(BorderFactory.createEmptyBorder(18, 90, 25, 90));
+        buttons.setBorder(BorderFactory.createEmptyBorder(18, 40, 25, 40));
 
         JButton deleteBtn = bigButton("DELETE ACTIVE TASK");
         JButton completeBtn = bigButton("MARK COMPLETED");
@@ -74,7 +75,10 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
 
         JPanel center = new JPanel(new BorderLayout());
         center.putClientProperty("themed_base", true);
-        center.setBorder(BorderFactory.createEmptyBorder(20, 120, 0, 120));
+
+        // ✅ Wider overall: reduce this padding too
+        center.setBorder(BorderFactory.createEmptyBorder(20, 60, 0, 60));
+
         center.add(listPanel, BorderLayout.CENTER);
         center.add(buttons, BorderLayout.SOUTH);
 
@@ -86,9 +90,16 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
     private JButton bigButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
+
+        // ✅ slightly smaller text so it fits without truncating
+        b.setFont(new Font("SansSerif", Font.BOLD, 16));
+
+        // keep the height nice
         b.setPreferredSize(new Dimension(0, 55));
-        b.setFont(new Font("SansSerif", Font.BOLD, 18));
-        b.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
+
+        // ✅ slightly tighter internal padding
+        b.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+
         return b;
     }
 

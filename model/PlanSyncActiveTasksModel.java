@@ -32,6 +32,35 @@ public class PlanSyncActiveTasksModel {
         return new ArrayList<>(activeTasks);
     }
 
+    /**
+     * Returns a list of active tasks due on the given date.
+     * This is used by the Calendar screen for highlighting and popups.
+     */
+    public synchronized List<Task> getTasksForDate(LocalDate date) {
+        if (date == null) return Collections.emptyList();
+        load();
+        List<Task> out = new ArrayList<>();
+        for (Task t : activeTasks) {
+            if (t != null && date.equals(t.deadline)) {
+                out.add(t);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Returns how many active tasks are due on the given date.
+     */
+    public synchronized int countTasksForDate(LocalDate date) {
+        if (date == null) return 0;
+        load();
+        int c = 0;
+        for (Task t : activeTasks) {
+            if (t != null && date.equals(t.deadline)) c++;
+        }
+        return c;
+    }
+
 
 /**
  * Returns the task by its 1-based ID as displayed in the UI.

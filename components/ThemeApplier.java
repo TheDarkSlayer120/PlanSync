@@ -75,10 +75,8 @@ public final class ThemeApplier {
             button.setBackground(dark);
 
             boolean isNav = false;
-            if (button instanceof JComponent jc) {
-                Object nav = jc.getClientProperty("nav_button");
-                isNav = Boolean.TRUE.equals(nav);
-            }
+            Object nav = button.getClientProperty("nav_button");
+            isNav = Boolean.TRUE.equals(nav);
 
             if (!isNav) {
                 Font f = button.getFont();
@@ -89,11 +87,9 @@ public final class ThemeApplier {
 
         // Titles/headers should switch color BOTH ways
         if (comp instanceof JLabel label) {
-            if (label instanceof JComponent jc) {
-                Object onBase = jc.getClientProperty("on_base");
-                if (Boolean.TRUE.equals(onBase)) {
-                    label.setForeground(darkMode ? Color.WHITE : Color.BLACK);
-                }
+            Object onBase = label.getClientProperty("on_base");
+            if (Boolean.TRUE.equals(onBase)) {
+                label.setForeground(darkMode ? Color.WHITE : Color.BLACK);
             }
         }
 

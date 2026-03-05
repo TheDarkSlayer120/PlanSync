@@ -6,6 +6,8 @@ import model.PlanSyncCompletedTasksModel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class CompletedTasksView extends JPanel implements RefreshableView {
 
@@ -28,14 +30,17 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
         title.setBorder(BorderFactory.createEmptyBorder(25, 10, 10, 10));
         add(title, BorderLayout.NORTH);
 
-        RoundedPanel listPanel = new RoundedPanel(28);
+        // ✅ Same as Active/Recurring
+        RoundedPanel listPanel = new RoundedPanel(35);
         listPanel.putClientProperty("themed", true);
         listPanel.setLayout(new BorderLayout());
-        listPanel.setBorder(BorderFactory.createEmptyBorder(16, 18, 16, 18));
+        listPanel.setBorder(BorderFactory.createEmptyBorder(22, 28, 22, 28));
 
         taskArea = new JTextArea();
         taskArea.setEditable(false);
-        taskArea.setFont(new Font("Monospaced", Font.BOLD, 16));
+        taskArea.setLineWrap(true);
+        taskArea.setWrapStyleWord(false);
+        taskArea.setFont(new Font("Monospaced", Font.BOLD, 14));
         taskArea.setOpaque(false);
 
         scroll = new JScrollPane(taskArea);
@@ -44,11 +49,19 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
         scroll.getViewport().setOpaque(false);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
 
+        // ✅ Same dynamic resize behavior as Active/Recurring
+        scroll.getViewport().addComponentListener(new ComponentAdapter() {
+            @Override public void componentResized(ComponentEvent e) {
+                updateListText();
+            }
+        });
+
         listPanel.add(scroll, BorderLayout.CENTER);
 
-        JPanel buttons = new JPanel(new GridLayout(1, 2, 35, 0));
+        // ✅ Button row sizing aligned with Recurring (2 buttons, so use 60 padding)
+        JPanel buttons = new JPanel(new GridLayout(1, 2, 25, 0));
         buttons.putClientProperty("themed_base", true);
-        buttons.setBorder(BorderFactory.createEmptyBorder(25, 120, 30, 120));
+        buttons.setBorder(BorderFactory.createEmptyBorder(18, 60, 25, 60));
 
         JButton deleteBtn = bigButton("DELETE COMPLETED TASK");
         JButton clearBtn = bigButton("CLEAR WHOLE LIST");
@@ -59,9 +72,11 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
         buttons.add(deleteBtn);
         buttons.add(clearBtn);
 
+        // ✅ Center padding EXACTLY like Active/Recurring (this controls list box size)
         JPanel center = new JPanel(new BorderLayout());
         center.putClientProperty("themed_base", true);
-        center.setBorder(BorderFactory.createEmptyBorder(20, 120, 0, 120));
+        center.setBorder(BorderFactory.createEmptyBorder(20, 60, 0, 60));
+
         center.add(listPanel, BorderLayout.CENTER);
         center.add(buttons, BorderLayout.SOUTH);
 
@@ -80,16 +95,17 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
         if (!confirm) return;
 
         completedModel.clearAll();
-        // ✅ Removed unnecessary “list cleared” pop-up
         updateListText();
     }
 
     private JButton bigButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
+
+        // match the newer button sizing we used elsewhere
+        b.setFont(new Font("SansSerif", Font.BOLD, 16));
         b.setPreferredSize(new Dimension(0, 55));
-        b.setFont(new Font("SansSerif", Font.BOLD, 18));
-        b.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
+        b.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
         return b;
     }
 
