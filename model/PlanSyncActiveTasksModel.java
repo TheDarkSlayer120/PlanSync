@@ -7,18 +7,10 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-/**
- * GUI-facing Active Tasks model.
- *
- * Mirrors the persistence + behaviour of modelTerminal.PlanSyncActiveTasks,
- * but exposes a safe API for Swing views.
- */
 public class PlanSyncActiveTasksModel {
 
-    /** Store task files under ./data/ (relative to working directory). */
     private static final String DATA_DIR = "data";
     private static final File ACTIVE_FILE = new File(DATA_DIR, "active_tasks.txt");
-
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public static class Task {
@@ -52,40 +44,27 @@ public class PlanSyncActiveTasksModel {
         save();
     }
 
-    /**
-     * Delete tasks by 0-based indexes.
-     */
     public synchronized void deleteTasksByIndexes(Collection<Integer> indexes0Based) {
         load();
         List<Integer> idx = new ArrayList<>();
         for (Integer i : indexes0Based) {
-            if (i != null && i >= 0 && i < activeTasks.size() && !idx.contains(i)) {
-                idx.add(i);
-            }
+            if (i != null && i >= 0 && i < activeTasks.size() && !idx.contains(i)) idx.add(i);
         }
         idx.sort(Integer::compareTo);
-        for (int i = idx.size() - 1; i >= 0; i--) {
-            activeTasks.remove((int) idx.get(i));
-        }
+        for (int i = idx.size() - 1; i >= 0; i--) activeTasks.remove((int) idx.get(i));
         save();
     }
 
-    /**
-     * Mark tasks complete by 0-based indexes and move them into completed model.
-     */
     public synchronized void markCompletedByIndexes(
             Collection<Integer> indexes0Based,
             PlanSyncCompletedTasksModel completedModel
     ) {
-
         if (completedModel == null) throw new IllegalArgumentException("completedModel cannot be null");
         load();
 
         List<Integer> idx = new ArrayList<>();
         for (Integer i : indexes0Based) {
-            if (i != null && i >= 0 && i < activeTasks.size() && !idx.contains(i)) {
-                idx.add(i);
-            }
+            if (i != null && i >= 0 && i < activeTasks.size() && !idx.contains(i)) idx.add(i);
         }
         idx.sort(Integer::compareTo);
 
@@ -96,7 +75,6 @@ public class PlanSyncActiveTasksModel {
             Task t = activeTasks.remove(index);
             completedModel.addCompleted(t.name, t.description, t.deadline, today);
         }
-
         save();
     }
 
@@ -104,55 +82,45 @@ public class PlanSyncActiveTasksModel {
         return DATE_FMT;
     }
 
-    /**
-     * Render the task list in the same “terminal style” used in the mockups.
-     * ✅ Header is centered.
-     */
     public synchronized String formatForDisplay() {
+        return formatForDisplay(93);
+    }
 
+    public synchronized String formatForDisplay(int widthChars) {
         load();
+        int width = Math.max(40, widthChars);
 
-        final int WIDTH = 93; // matches the separator length below
         String header = "<<ACTIVE TASKS:>> (TODAY: " + LocalDate.now().format(DATE_FMT) + ")";
 
         StringBuilder sb = new StringBuilder();
-        sb.append(centerLine(header, WIDTH)).append("\n")
-                .append("=============================================================================================\n");
+        sb.append(centerLine(header, width)).append("\n")
+          .append(doubleLine(width)).append("\n\n");
 
         if (activeTasks.isEmpty()) {
-            sb.append("\nNo active tasks found.\n");
+            sb.append("No active tasks found.\n");
             return sb.toString();
         }
 
         int id = 1;
         for (Task task : activeTasks) {
             long days = ChronoUnit.DAYS.between(LocalDate.now(), task.deadline);
-            String status = (days < 0)
-                    ? Math.abs(days) + " DAYS OVERDUE"
-                    : days + " DAYS REMAINING";
+            String status = (days < 0) ? Math.abs(days) + " DAYS OVERDUE" : days + " DAYS REMAINING";
 
             sb.append("[").append(id).append("] ")
-                    .append(task.name)
-                    .append(" -> ")
-                    .append(task.description)
-                    .append(" -> {")
-                    .append(task.deadline.format(DATE_FMT))
-                    .append("} -> [")
-                    .append(status)
-                    .append("]\n\n");
+              .append(task.name).append(" -> ")
+              .append(task.description).append(" -> {")
+              .append(task.deadline.format(DATE_FMT))
+              .append("} -> [")
+              .append(status)
+              .append("]\n\n");
             id++;
         }
         return sb.toString();
     }
 
-    /* ================= FILE IO ================= */
-
     private static void ensureDataDir() {
         File dir = new File(DATA_DIR);
-        if (!dir.exists()) {
-            //noinspection ResultOfMethodCallIgnored
-            dir.mkdirs();
-        }
+        if (!dir.exists()) dir.mkdirs();
     }
 
     private void load() {
@@ -165,15 +133,12 @@ public class PlanSyncActiveTasksModel {
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\\|", -1);
                 if (parts.length < 3) continue;
-
                 String name = parts[0];
                 String description = parts[1];
                 LocalDate deadline = LocalDate.parse(parts[2], DATE_FMT);
-
                 activeTasks.add(new Task(name, description, deadline));
             }
-        } catch (IOException ignored) {
-        }
+        } catch (IOException ignored) {}
     }
 
     private void save() {
@@ -183,8 +148,7 @@ public class PlanSyncActiveTasksModel {
                 bw.write(clean(t.name) + "|" + clean(t.description) + "|" + t.deadline.format(DATE_FMT));
                 bw.newLine();
             }
-        } catch (IOException ignored) {
-        }
+        } catch (IOException ignored) {}
     }
 
     private static String clean(String s) {
@@ -197,5 +161,11 @@ public class PlanSyncActiveTasksModel {
         if (line.length() >= width) return line;
         int pad = (width - line.length()) / 2;
         return " ".repeat(Math.max(0, pad)) + line;
+    }
+
+    private static String doubleLine(int width) {
+        int w = Math.max(1, width);
+        String line = "=".repeat(w);
+        return line + "\n" + line;
     }
 }

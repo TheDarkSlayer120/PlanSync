@@ -9,12 +9,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * GUI-facing Recurring Tasks model.
- *
- * Mirrors modelTerminal.PlanSyncRecurringTasks logic (status calculation + formatting)
- * with GUI-friendly methods and data storage under ./data/.
- */
 public class PlanSyncRecurringTasksModel {
 
     private static final String DATA_DIR = "data";
@@ -26,14 +20,6 @@ public class PlanSyncRecurringTasksModel {
     public static class RecurringTask {
         public final String name;
         public final String description;
-
-        /**
-         * Stored like terminal version:
-         * DAILY   -> "HH:mm"
-         * WEEKLY  -> "HH:mm MONDAY"
-         * MONTHLY -> "DD/MM (Start Month: MM)"
-         * YEARLY  -> "DD/MM (Start: YYYY)"
-         */
         public final String timeDate;
         public final String frequency;
 
@@ -58,7 +44,6 @@ public class PlanSyncRecurringTasksModel {
         save();
     }
 
-    /** Delete by 0-based indexes. */
     public synchronized void deleteTasksByIndexes(Collection<Integer> indexes0Based) {
         load();
         List<Integer> idx = new ArrayList<>();
@@ -70,19 +55,22 @@ public class PlanSyncRecurringTasksModel {
         save();
     }
 
-    /** Terminal-style list render. */
     public synchronized String formatForDisplay() {
-        load();
+        return formatForDisplay(93);
+    }
 
-        final int WIDTH = 93;
+    public synchronized String formatForDisplay(int widthChars) {
+        load();
+        int width = Math.max(40, widthChars);
+
         String header = "<<RECURRING TASKS:>> (TODAY: " + LocalDate.now().format(DATE_FMT) + ")";
 
         StringBuilder sb = new StringBuilder();
-        sb.append(centerLine(header, WIDTH)).append("\n")
-                .append("=============================================================================================\n");
+        sb.append(centerLine(header, width)).append("\n")
+          .append(doubleLine(width)).append("\n\n");
 
         if (tasks.isEmpty()) {
-            sb.append("\nNo recurring tasks found.\n");
+            sb.append("No recurring tasks found.\n");
             return sb.toString();
         }
 
@@ -90,29 +78,24 @@ public class PlanSyncRecurringTasksModel {
         int id = 1;
 
         for (RecurringTask t : tasks) {
-
             String status = computeStatus(t, today);
             String displayDate = t.timeDate;
 
-            // terminal displays MONTHLY as "d MMMM"
             if ("MONTHLY".equalsIgnoreCase(t.frequency)) {
                 displayDate = formatMonthlyDisplay(t.timeDate);
             }
 
             sb.append("[").append(id).append("] ")
-                    .append(t.name).append(" -> ")
-                    .append(t.description).append(" -> {")
-                    .append(displayDate).append("} -> [")
-                    .append(t.frequency).append("] -> [")
-                    .append(status).append("]\n\n");
-
+              .append(t.name).append(" -> ")
+              .append(t.description).append(" -> {")
+              .append(displayDate).append("} -> [")
+              .append(t.frequency).append("] -> [")
+              .append(status).append("]\n\n");
             id++;
         }
 
         return sb.toString();
     }
-
-    /* ================= VALIDATION HELPERS (used by AddRecurringView) ================= */
 
     public static LocalTime parseTimeHHmm(String time) throws DateTimeParseException {
         return LocalTime.parse(time, TIME_FMT);
@@ -128,24 +111,18 @@ public class PlanSyncRecurringTasksModel {
         LocalDate.parse(String.format("%02d/%02d/2000", d, m), DATE_FMT);
     }
 
-    /* ================= INTERNALS ================= */
-
     private static String computeStatus(RecurringTask task, LocalDate today) {
         try {
             return switch (task.frequency.toUpperCase()) {
                 case "DAILY" -> "REPEATS DAILY";
-
                 case "WEEKLY" -> {
                     String[] parts = task.timeDate.split(" ");
                     String dayName = parts.length >= 2 ? parts[1] : "";
                     DayOfWeek targetDay = DayOfWeek.valueOf(dayName);
-
                     int daysUntil = (targetDay.getValue() - today.getDayOfWeek().getValue() + 7) % 7;
                     if (daysUntil == 0) daysUntil = 7;
-
                     yield daysUntil + " DAYS UNTIL NEXT";
                 }
-
                 case "MONTHLY" -> {
                     String datePart = task.timeDate.split(" ")[0];
                     String[] dm = datePart.split("/");
@@ -155,15 +132,13 @@ public class PlanSyncRecurringTasksModel {
                     LocalDate next;
                     if (month > today.getMonthValue()) next = LocalDate.of(today.getYear(), month, day);
                     else if (month < today.getMonthValue()) next = LocalDate.of(today.getYear() + 1, month, day);
-                    else {
-                        if (day > today.getDayOfMonth()) next = LocalDate.of(today.getYear(), month, day);
-                        else next = LocalDate.of(today.getYear() + 1, month, day);
-                    }
+                    else next = (day > today.getDayOfMonth())
+                            ? LocalDate.of(today.getYear(), month, day)
+                            : LocalDate.of(today.getYear() + 1, month, day);
 
                     long days = ChronoUnit.DAYS.between(today, next);
                     yield days + " DAYS UNTIL NEXT";
                 }
-
                 case "YEARLY" -> {
                     String[] parts = task.timeDate.split(" ");
                     String[] dm = parts[0].split("/");
@@ -176,7 +151,6 @@ public class PlanSyncRecurringTasksModel {
                     long days = ChronoUnit.DAYS.between(today, next);
                     yield days + " DAYS UNTIL NEXT";
                 }
-
                 default -> "UNKNOWN";
             };
         } catch (Exception e) {
@@ -190,7 +164,6 @@ public class PlanSyncRecurringTasksModel {
             String[] parts = datePart.split("/");
             int day = Integer.parseInt(parts[0]);
             int month = Integer.parseInt(parts[1]);
-
             LocalDate temp = LocalDate.of(2000, month, day);
             return temp.format(DateTimeFormatter.ofPattern("d MMMM"));
         } catch (Exception e) {
@@ -200,10 +173,7 @@ public class PlanSyncRecurringTasksModel {
 
     private static void ensureDataDir() {
         File dir = new File(DATA_DIR);
-        if (!dir.exists()) {
-            //noinspection ResultOfMethodCallIgnored
-            dir.mkdirs();
-        }
+        if (!dir.exists()) dir.mkdirs();
     }
 
     private void load() {
@@ -218,8 +188,7 @@ public class PlanSyncRecurringTasksModel {
                 if (parts.length < 4) continue;
                 tasks.add(new RecurringTask(parts[0], parts[1], parts[2], parts[3]));
             }
-        } catch (IOException ignored) {
-        }
+        } catch (IOException ignored) {}
     }
 
     private void save() {
@@ -229,8 +198,7 @@ public class PlanSyncRecurringTasksModel {
                 bw.write(clean(t.name) + "|" + clean(t.description) + "|" + clean(t.timeDate) + "|" + clean(t.frequency));
                 bw.newLine();
             }
-        } catch (IOException ignored) {
-        }
+        } catch (IOException ignored) {}
     }
 
     private static String clean(String s) {
@@ -243,5 +211,11 @@ public class PlanSyncRecurringTasksModel {
         if (line.length() >= width) return line;
         int pad = (width - line.length()) / 2;
         return " ".repeat(Math.max(0, pad)) + line;
+    }
+
+    private static String doubleLine(int width) {
+        int w = Math.max(1, width);
+        String line = "=".repeat(w);
+        return line + "\n" + line;
     }
 }

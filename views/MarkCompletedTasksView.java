@@ -6,12 +6,11 @@ import model.PlanSyncCompletedTasksModel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * MARK COMPLETED TASK page (GUI).
- */
 public class MarkCompletedTasksView extends JPanel implements RefreshableView {
 
     private final AppController controller;
@@ -20,13 +19,13 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
 
     private final JTextArea taskArea;
     private final JTextField selectionField;
+    private final JScrollPane scroll;
 
     public MarkCompletedTasksView(
             AppController controller,
             PlanSyncActiveTasksModel activeModel,
             PlanSyncCompletedTasksModel completedModel
     ) {
-
         this.controller = controller;
         this.activeModel = activeModel;
         this.completedModel = completedModel;
@@ -51,16 +50,22 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
         taskArea = new JTextArea();
         taskArea.setEditable(false);
         taskArea.setLineWrap(true);
-        taskArea.setWrapStyleWord(true);
+        taskArea.setWrapStyleWord(false);
         taskArea.setFont(new Font("Monospaced", Font.BOLD, 14));
         taskArea.setOpaque(false);
 
-        JScrollPane scroll = new JScrollPane(taskArea);
+        scroll = new JScrollPane(taskArea);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
-        listPanel.add(scroll, BorderLayout.CENTER);
 
+        scroll.getViewport().addComponentListener(new ComponentAdapter() {
+            @Override public void componentResized(ComponentEvent e) {
+                updateListTextPreserveInput();
+            }
+        });
+
+        listPanel.add(scroll, BorderLayout.CENTER);
         center.add(listPanel, BorderLayout.CENTER);
 
         RoundedPanel inputRow = new RoundedPanel(35);
@@ -85,7 +90,6 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
         inputRow.add(fieldWrap, BorderLayout.CENTER);
 
         center.add(inputRow, BorderLayout.SOUTH);
-
         add(center, BorderLayout.CENTER);
 
         JPanel buttons = new JPanel(new GridLayout(1, 2, 35, 0));
@@ -112,6 +116,27 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
         return b;
     }
 
+    private int getWidthChars() {
+        int px = scroll.getViewport().getExtentSize().width;
+        Insets in = taskArea.getInsets();
+        px -= (in.left + in.right);
+        if (px <= 0) return 93;
+
+        FontMetrics fm = taskArea.getFontMetrics(taskArea.getFont());
+        int charW = fm.charWidth('=');
+        if (charW <= 0) charW = Math.max(1, fm.charWidth('W'));
+
+        int chars = px / charW;
+        return Math.max(40, chars);
+    }
+
+    private void updateListTextPreserveInput() {
+        String keep = selectionField.getText();
+        taskArea.setText(activeModel.formatForDisplay(getWidthChars()));
+        taskArea.setCaretPosition(0);
+        selectionField.setText(keep);
+    }
+
     private void onMarkComplete() {
         List<Integer> indexes = parseSelections(selectionField.getText());
         if (indexes.isEmpty()) {
@@ -125,7 +150,6 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
                 "Confirm",
                 JOptionPane.YES_NO_OPTION
         );
-
         if (confirm != JOptionPane.YES_OPTION) return;
 
         activeModel.markCompletedByIndexes(indexes, completedModel);
@@ -145,18 +169,15 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
             try {
                 int oneBased = Integer.parseInt(p);
                 int zero = oneBased - 1;
-                if (zero >= 0 && zero < size && !idx.contains(zero)) {
-                    idx.add(zero);
-                }
-            } catch (NumberFormatException ignored) {
-            }
+                if (zero >= 0 && zero < size && !idx.contains(zero)) idx.add(zero);
+            } catch (NumberFormatException ignored) {}
         }
         return idx;
     }
 
     @Override
     public void refresh() {
-        taskArea.setText(activeModel.formatForDisplay());
+        taskArea.setText(activeModel.formatForDisplay(getWidthChars()));
         taskArea.setCaretPosition(0);
         selectionField.setText("");
     }

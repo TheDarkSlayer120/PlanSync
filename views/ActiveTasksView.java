@@ -5,12 +5,8 @@ import model.PlanSyncActiveTasksModel;
 
 import javax.swing.*;
 import java.awt.*;
-
-/**
- * ACTIVE TASKS page (GUI).
- *
- * Uses PlanSyncActiveTasksModel to render the terminal-style task list.
- */
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class ActiveTasksView extends JPanel implements RefreshableView {
 
@@ -18,6 +14,7 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
     private final PlanSyncActiveTasksModel activeModel;
 
     private final JTextArea taskArea;
+    private final JScrollPane scroll;
 
     public ActiveTasksView(AppController controller, PlanSyncActiveTasksModel activeModel) {
         this.controller = controller;
@@ -25,14 +22,12 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
 
         setLayout(new BorderLayout());
 
-        // Title
         JLabel title = new JLabel("A C T I V E   T A S K S", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.putClientProperty("on_base", true);
         title.setBorder(BorderFactory.createEmptyBorder(25, 10, 10, 10));
         add(title, BorderLayout.NORTH);
 
-        // Center list panel
         RoundedPanel listPanel = new RoundedPanel(35);
         listPanel.putClientProperty("themed", true);
         listPanel.setLayout(new BorderLayout());
@@ -41,18 +36,23 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         taskArea = new JTextArea();
         taskArea.setEditable(false);
         taskArea.setLineWrap(true);
-        taskArea.setWrapStyleWord(true);
+        taskArea.setWrapStyleWord(false); // keep separator stable
         taskArea.setFont(new Font("Monospaced", Font.BOLD, 14));
         taskArea.setOpaque(false);
 
-        JScrollPane scroll = new JScrollPane(taskArea);
+        scroll = new JScrollPane(taskArea);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
 
+        scroll.getViewport().addComponentListener(new ComponentAdapter() {
+            @Override public void componentResized(ComponentEvent e) {
+                updateListText();
+            }
+        });
+
         listPanel.add(scroll, BorderLayout.CENTER);
 
-        // Buttons row
         JPanel buttons = new JPanel(new GridLayout(1, 3, 25, 0));
         buttons.putClientProperty("themed_base", true);
         buttons.setBorder(BorderFactory.createEmptyBorder(18, 120, 25, 120));
@@ -69,9 +69,8 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         buttons.add(completeBtn);
         buttons.add(addBtn);
 
-        JPanel center = new JPanel();
+        JPanel center = new JPanel(new BorderLayout());
         center.putClientProperty("themed_base", true);
-        center.setLayout(new BorderLayout());
         center.setBorder(BorderFactory.createEmptyBorder(20, 120, 0, 120));
         center.add(listPanel, BorderLayout.CENTER);
         center.add(buttons, BorderLayout.SOUTH);
@@ -90,9 +89,27 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         return b;
     }
 
+    private int getWidthChars() {
+        int px = scroll.getViewport().getExtentSize().width;
+        Insets in = taskArea.getInsets();
+        px -= (in.left + in.right);
+        if (px <= 0) return 93;
+
+        FontMetrics fm = taskArea.getFontMetrics(taskArea.getFont());
+        int charW = fm.charWidth('=');
+        if (charW <= 0) charW = Math.max(1, fm.charWidth('W'));
+
+        int chars = px / charW;
+        return Math.max(40, chars);
+    }
+
+    private void updateListText() {
+        taskArea.setText(activeModel.formatForDisplay(getWidthChars()));
+        taskArea.setCaretPosition(0);
+    }
+
     @Override
     public void refresh() {
-        taskArea.setText(activeModel.formatForDisplay());
-        taskArea.setCaretPosition(0);
+        updateListText();
     }
 }

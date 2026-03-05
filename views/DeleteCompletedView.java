@@ -5,6 +5,8 @@ import model.PlanSyncCompletedTasksModel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +17,7 @@ public class DeleteCompletedView extends JPanel implements RefreshableView {
 
     private final JTextArea taskArea;
     private final JTextField selectionField;
+    private final JScrollPane scroll;
 
     public DeleteCompletedView(AppController controller, PlanSyncCompletedTasksModel completedModel) {
         this.controller = controller;
@@ -40,16 +43,22 @@ public class DeleteCompletedView extends JPanel implements RefreshableView {
         taskArea = new JTextArea();
         taskArea.setEditable(false);
         taskArea.setLineWrap(true);
-        taskArea.setWrapStyleWord(true);
+        taskArea.setWrapStyleWord(false);
         taskArea.setFont(new Font("Monospaced", Font.BOLD, 14));
         taskArea.setOpaque(false);
 
-        JScrollPane scroll = new JScrollPane(taskArea);
+        scroll = new JScrollPane(taskArea);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
-        listPanel.add(scroll, BorderLayout.CENTER);
 
+        scroll.getViewport().addComponentListener(new ComponentAdapter() {
+            @Override public void componentResized(ComponentEvent e) {
+                updateListTextPreserveInput();
+            }
+        });
+
+        listPanel.add(scroll, BorderLayout.CENTER);
         center.add(listPanel, BorderLayout.CENTER);
 
         RoundedPanel inputRow = new RoundedPanel(35);
@@ -74,7 +83,6 @@ public class DeleteCompletedView extends JPanel implements RefreshableView {
         inputRow.add(fieldWrap, BorderLayout.CENTER);
 
         center.add(inputRow, BorderLayout.SOUTH);
-
         add(center, BorderLayout.CENTER);
 
         JPanel buttons = new JPanel(new GridLayout(1, 2, 35, 0));
@@ -89,7 +97,6 @@ public class DeleteCompletedView extends JPanel implements RefreshableView {
 
         buttons.add(cancel);
         buttons.add(delete);
-
         add(buttons, BorderLayout.SOUTH);
     }
 
@@ -100,6 +107,27 @@ public class DeleteCompletedView extends JPanel implements RefreshableView {
         b.setFont(new Font("SansSerif", Font.BOLD, 18));
         b.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
         return b;
+    }
+
+    private int getWidthChars() {
+        int px = scroll.getViewport().getExtentSize().width;
+        Insets in = taskArea.getInsets();
+        px -= (in.left + in.right);
+        if (px <= 0) return 93;
+
+        FontMetrics fm = taskArea.getFontMetrics(taskArea.getFont());
+        int charW = fm.charWidth('=');
+        if (charW <= 0) charW = Math.max(1, fm.charWidth('W'));
+
+        int chars = px / charW;
+        return Math.max(40, chars);
+    }
+
+    private void updateListTextPreserveInput() {
+        String keep = selectionField.getText();
+        taskArea.setText(completedModel.formatForDisplay(getWidthChars()));
+        taskArea.setCaretPosition(0);
+        selectionField.setText(keep);
     }
 
     private void onDelete() {
@@ -115,7 +143,6 @@ public class DeleteCompletedView extends JPanel implements RefreshableView {
                 "Confirm Delete",
                 JOptionPane.YES_NO_OPTION
         );
-
         if (confirm != JOptionPane.YES_OPTION) return;
 
         completedModel.deleteByIndexes(indexes);
@@ -135,18 +162,15 @@ public class DeleteCompletedView extends JPanel implements RefreshableView {
             try {
                 int oneBased = Integer.parseInt(p);
                 int zero = oneBased - 1;
-                if (zero >= 0 && zero < size && !idx.contains(zero)) {
-                    idx.add(zero);
-                }
-            } catch (NumberFormatException ignored) {
-            }
+                if (zero >= 0 && zero < size && !idx.contains(zero)) idx.add(zero);
+            } catch (NumberFormatException ignored) {}
         }
         return idx;
     }
 
     @Override
     public void refresh() {
-        taskArea.setText(completedModel.formatForDisplay());
+        taskArea.setText(completedModel.formatForDisplay(getWidthChars()));
         taskArea.setCaretPosition(0);
         selectionField.setText("");
     }
