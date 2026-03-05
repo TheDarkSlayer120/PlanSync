@@ -1,12 +1,11 @@
 package views;
 
 import controller.AppController;
+import components.PlanSyncDialogs;
 import model.PlanSyncCompletedTasksModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 public class CompletedTasksView extends JPanel implements RefreshableView {
 
@@ -17,6 +16,7 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
     private final JScrollPane scroll;
 
     public CompletedTasksView(AppController controller, PlanSyncCompletedTasksModel completedModel) {
+
         this.controller = controller;
         this.completedModel = completedModel;
 
@@ -28,34 +28,27 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
         title.setBorder(BorderFactory.createEmptyBorder(25, 10, 10, 10));
         add(title, BorderLayout.NORTH);
 
-        RoundedPanel listPanel = new RoundedPanel(35);
+        RoundedPanel listPanel = new RoundedPanel(28);
         listPanel.putClientProperty("themed", true);
         listPanel.setLayout(new BorderLayout());
-        listPanel.setBorder(BorderFactory.createEmptyBorder(22, 28, 22, 28));
+        listPanel.setBorder(BorderFactory.createEmptyBorder(16, 18, 16, 18));
 
         taskArea = new JTextArea();
         taskArea.setEditable(false);
-        taskArea.setLineWrap(true);
-        taskArea.setWrapStyleWord(false);
-        taskArea.setFont(new Font("Monospaced", Font.BOLD, 14));
+        taskArea.setFont(new Font("Monospaced", Font.BOLD, 16));
         taskArea.setOpaque(false);
 
         scroll = new JScrollPane(taskArea);
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
-
-        scroll.getViewport().addComponentListener(new ComponentAdapter() {
-            @Override public void componentResized(ComponentEvent e) {
-                updateListText();
-            }
-        });
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
 
         listPanel.add(scroll, BorderLayout.CENTER);
 
         JPanel buttons = new JPanel(new GridLayout(1, 2, 35, 0));
         buttons.putClientProperty("themed_base", true);
-        buttons.setBorder(BorderFactory.createEmptyBorder(18, 210, 25, 210));
+        buttons.setBorder(BorderFactory.createEmptyBorder(25, 120, 30, 120));
 
         JButton deleteBtn = bigButton("DELETE COMPLETED TASK");
         JButton clearBtn = bigButton("CLEAR WHOLE LIST");
@@ -78,16 +71,16 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
     }
 
     private void onClear() {
-        int confirm = JOptionPane.showConfirmDialog(
+        boolean confirm = PlanSyncDialogs.confirm(
                 this,
-                "Clear the entire completed tasks list?",
+                controller,
                 "Confirm Clear",
-                JOptionPane.YES_NO_OPTION
+                "Clear the entire completed tasks list?"
         );
-        if (confirm != JOptionPane.YES_OPTION) return;
+        if (!confirm) return;
 
         completedModel.clearAll();
-        JOptionPane.showMessageDialog(this, "Completed tasks list cleared.", "Cleared", JOptionPane.INFORMATION_MESSAGE);
+        // ✅ Removed unnecessary “list cleared” pop-up
         updateListText();
     }
 

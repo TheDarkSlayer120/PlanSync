@@ -1,6 +1,7 @@
 package views;
 
 import controller.AppController;
+import components.PlanSyncDialogs;
 import model.PlanSyncActiveTasksModel;
 
 import javax.swing.*;
@@ -113,24 +114,24 @@ public class AddActiveTaskView extends JPanel implements RefreshableView {
         String date = dateField.getText().trim();
 
         if (name.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a task name.", "Missing Name", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Missing Name", "Please enter a task name.");
             return;
         }
         if (desc.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a task description.", "Missing Description", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Missing Description", "Please enter a task description.");
             return;
         }
         if (date.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a deadline date (DD/MM/YYYY).", "Missing Date", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Missing Date", "Please enter a deadline date (DD/MM/YYYY).");
             return;
         }
 
         try {
             activeModel.addTask(name, desc, date);
-            JOptionPane.showMessageDialog(this, "New active task added!", "Saved", JOptionPane.INFORMATION_MESSAGE);
+            // ✅ Removed unnecessary “task added” pop-up
             controller.showActiveTasks();
         } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Invalid date format. Please use DD/MM/YYYY.", "Invalid Date", JOptionPane.ERROR_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Invalid Date", "Invalid date format. Please use DD/MM/YYYY.");
         }
     }
 

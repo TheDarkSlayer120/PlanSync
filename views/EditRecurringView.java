@@ -1,6 +1,7 @@
 package views;
 
 import controller.AppController;
+import components.PlanSyncDialogs;
 import model.PlanSyncRecurringTasksModel;
 
 import javax.swing.*;
@@ -238,7 +239,8 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         weeklyDayCombo = new JComboBox<>(new String[]{
                 "MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"
         });
-        weeklyDayCombo.setFont(new Font("SansSerif", Font.BOLD, 16));
+
+                weeklyDayCombo.setFont(new Font("SansSerif", Font.BOLD, 16));
         weeklyDayWrap.add(weeklyDayCombo, BorderLayout.CENTER);
         weeklyPanel.add(weeklyDayWrap);
 
@@ -356,13 +358,13 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         try {
             id = Integer.parseInt(raw);
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Please enter a valid numeric task ID.", "Invalid ID", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Invalid ID", "Please enter a valid numeric task ID.");
             return;
         }
 
         PlanSyncRecurringTasksModel.RecurringTask t = recurringModel.getTaskById(id);
         if (t == null) {
-            JOptionPane.showMessageDialog(this, "No recurring task found with ID " + id + ".", "Not Found", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Not Found", "No recurring task found with ID " + id + ".");
             return;
         }
 
@@ -421,7 +423,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
 
     private void onSave() {
         if (loadedId == null) {
-            JOptionPane.showMessageDialog(this, "Load a task first (enter ID and press LOAD).", "Nothing Loaded", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Nothing Loaded", "Load a task first (enter ID and press LOAD).");
             return;
         }
 
@@ -429,11 +431,11 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         String desc = descArea.getText().trim();
 
         if (name.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a task name.", "Missing Name", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Missing Name", "Please enter a task name.");
             return;
         }
         if (desc.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a task description.", "Missing Description", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Missing Description", "Please enter a task description.");
             return;
         }
 
@@ -445,7 +447,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
                 case "DAILY" -> {
                     String time = dailyTimeField.getText().trim();
                     if (time.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Please enter time (HH:MM).", "Missing Time", JOptionPane.WARNING_MESSAGE);
+                        PlanSyncDialogs.alert(this, controller, "Missing Time", "Please enter time (HH:MM).");
                         return;
                     }
                     LocalTime t = PlanSyncRecurringTasksModel.parseTimeHHmm(time);
@@ -455,7 +457,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
                 case "WEEKLY" -> {
                     String time = weeklyTimeField.getText().trim();
                     if (time.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Please enter time (HH:MM).", "Missing Time", JOptionPane.WARNING_MESSAGE);
+                        PlanSyncDialogs.alert(this, controller, "Missing Time", "Please enter time (HH:MM).");
                         return;
                     }
                     LocalTime t = PlanSyncRecurringTasksModel.parseTimeHHmm(time);
@@ -467,7 +469,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
                     String day = monthlyDayField.getText().trim();
                     String month = monthlyMonthField.getText().trim();
                     if (day.isEmpty() || month.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Please enter DD and MM.", "Missing Data", JOptionPane.WARNING_MESSAGE);
+                        PlanSyncDialogs.alert(this, controller, "Missing Data", "Please enter DD and MM.");
                         return;
                     }
                     PlanSyncRecurringTasksModel.validateDayMonth(day, month);
@@ -480,7 +482,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
                     String dm = yearlyDayMonthField.getText().trim();
                     String year = yearlyYearField.getText().trim();
                     if (dm.isEmpty() || year.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Please enter DD/MM and YYYY.", "Missing Data", JOptionPane.WARNING_MESSAGE);
+                        PlanSyncDialogs.alert(this, controller, "Missing Data", "Please enter DD/MM and YYYY.");
                         return;
                     }
                     PlanSyncRecurringTasksModel.validateDayMonthYear(dm, year);
@@ -492,19 +494,19 @@ public class EditRecurringView extends JPanel implements RefreshableView {
             }
 
             recurringModel.updateTaskById(loadedId, name, desc, timeDate, selectedFrequency);
-            JOptionPane.showMessageDialog(this, "Recurring task updated!", "Saved", JOptionPane.INFORMATION_MESSAGE);
+            // ✅ Removed unnecessary “task updated” pop-up
             controller.showRecurringTasks();
 
         } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Invalid time/date format. Check your inputs.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Invalid Input", "Invalid time/date format. Check your inputs.");
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Invalid number input. Check DD/MM/YYYY values.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Invalid Input", "Invalid number input. Check DD/MM/YYYY values.");
         } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Invalid Input", ex.getMessage());
         }
     }
 
-    // --------- Parsing helpers for existing saved strings ---------
+        // --------- Parsing helpers for existing saved strings ---------
 
     private String extractHHmm(String s) {
         if (s == null) return "";

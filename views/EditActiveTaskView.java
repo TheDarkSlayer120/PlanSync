@@ -1,6 +1,7 @@
 package views;
 
 import controller.AppController;
+import components.PlanSyncDialogs;
 import model.PlanSyncActiveTasksModel;
 
 import javax.swing.*;
@@ -204,13 +205,13 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
         try {
             id = Integer.parseInt(raw);
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Please enter a valid numeric task ID.", "Invalid ID", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Invalid ID", "Please enter a valid numeric task ID.");
             return;
         }
 
         PlanSyncActiveTasksModel.Task t = activeModel.getTaskById(id);
         if (t == null) {
-            JOptionPane.showMessageDialog(this, "No active task found with ID " + id + ".", "Not Found", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Not Found", "No active task found with ID " + id + ".");
             return;
         }
 
@@ -225,7 +226,7 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
 
     private void onSave() {
         if (loadedId == null) {
-            JOptionPane.showMessageDialog(this, "Load a task first (enter ID and press LOAD).", "Nothing Loaded", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Nothing Loaded", "Load a task first (enter ID and press LOAD).");
             return;
         }
 
@@ -234,26 +235,26 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
         String date = dateField.getText().trim();
 
         if (name.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a task name.", "Missing Name", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Missing Name", "Please enter a task name.");
             return;
         }
         if (desc.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a task description.", "Missing Description", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Missing Description", "Please enter a task description.");
             return;
         }
         if (date.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a deadline date (DD/MM/YYYY).", "Missing Date", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Missing Date", "Please enter a deadline date (DD/MM/YYYY).");
             return;
         }
 
         try {
             activeModel.updateTaskById(loadedId, name, desc, date);
-            JOptionPane.showMessageDialog(this, "Active task updated!", "Saved", JOptionPane.INFORMATION_MESSAGE);
+            // ✅ Removed unnecessary “task updated” pop-up
             controller.showActiveTasks();
         } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Invalid date format. Please use DD/MM/YYYY.", "Invalid Date", JOptionPane.ERROR_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Invalid Date", "Invalid date format. Please use DD/MM/YYYY.");
         } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid ID", JOptionPane.ERROR_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Invalid ID", ex.getMessage());
         }
     }
 

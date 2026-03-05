@@ -1,6 +1,7 @@
 package views;
 
 import controller.AppController;
+import components.PlanSyncDialogs;
 import model.PlanSyncCompletedTasksModel;
 
 import javax.swing.*;
@@ -133,20 +134,20 @@ public class DeleteCompletedView extends JPanel implements RefreshableView {
     private void onDelete() {
         List<Integer> indexes = parseSelections(selectionField.getText());
         if (indexes.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No valid tasks selected.", "Invalid Selection", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Invalid Selection", "No valid tasks selected.");
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(
+        boolean confirm = PlanSyncDialogs.confirm(
                 this,
-                "Are you sure you want to delete the selected task(s)?",
+                controller,
                 "Confirm Delete",
-                JOptionPane.YES_NO_OPTION
+                "Are you sure you want to delete the selected task(s)?"
         );
-        if (confirm != JOptionPane.YES_OPTION) return;
+        if (!confirm) return;
 
         completedModel.deleteByIndexes(indexes);
-        JOptionPane.showMessageDialog(this, "Task(s) deleted!", "Deleted", JOptionPane.INFORMATION_MESSAGE);
+        // ✅ Removed unnecessary “task deleted” pop-up
         controller.showCompletedTasks();
     }
 

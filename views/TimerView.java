@@ -1,6 +1,7 @@
 package views;
 
 import controller.AppController;
+import components.PlanSyncDialogs;
 import model.PlanSyncTimer;
 import model.TimerListener;
 
@@ -153,11 +154,11 @@ public class TimerView extends JPanel {
             @Override
             public void onFinished() {
                 SwingUtilities.invokeLater(() ->
-                        JOptionPane.showMessageDialog(
+                        PlanSyncDialogs.alert(
                                 TimerView.this,
-                                "Time's up!",
+                                controller,
                                 "Timer",
-                                JOptionPane.INFORMATION_MESSAGE
+                                "Time's up!"
                         )
                 );
             }
@@ -187,7 +188,7 @@ public class TimerView extends JPanel {
         JButton b = new JButton(label);
         b.setFocusPainted(false);
         b.setBackground(new Color(95, 125, 195));
-        b.setForeground(Color.BLACK); 
+        b.setForeground(Color.BLACK);
         b.setFont(new Font("Monospaced", Font.BOLD, 18));
         b.setBorder(BorderFactory.createEmptyBorder(12, 15, 12, 15));
         b.addActionListener(e -> timer.setDuration(seconds));
@@ -213,25 +214,20 @@ public class TimerView extends JPanel {
             int s = Integer.parseInt(secondsField.getText().trim());
 
             if (h < 0 || m < 0 || s < 0 || m > 59 || s > 59) {
-                JOptionPane.showMessageDialog(this, "Invalid time format.", "Error", JOptionPane.WARNING_MESSAGE);
+                PlanSyncDialogs.alert(this, controller, "Error", "Invalid time format.");
                 return;
             }
 
             int total = h * 3600 + m * 60 + s;
             if (total <= 0) {
-                JOptionPane.showMessageDialog(this, "Time must be greater than 0.", "Error", JOptionPane.WARNING_MESSAGE);
+                PlanSyncDialogs.alert(this, controller, "Error", "Time must be greater than 0.");
                 return;
             }
 
             timer.setDuration(total);
 
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Enter valid numbers (00-59 for Minutes/Seconds).",
-                    "Error",
-                    JOptionPane.WARNING_MESSAGE
-            );
+            PlanSyncDialogs.alert(this, controller, "Error", "Enter valid numbers (00-59 for Minutes/Seconds).");
         }
     }
 }

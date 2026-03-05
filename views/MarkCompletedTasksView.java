@@ -1,6 +1,7 @@
 package views;
 
 import controller.AppController;
+import components.PlanSyncDialogs;
 import model.PlanSyncActiveTasksModel;
 import model.PlanSyncCompletedTasksModel;
 
@@ -140,20 +141,20 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
     private void onMarkComplete() {
         List<Integer> indexes = parseSelections(selectionField.getText());
         if (indexes.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No valid tasks selected.", "Invalid Selection", JOptionPane.WARNING_MESSAGE);
+            PlanSyncDialogs.alert(this, controller, "Invalid Selection", "No valid tasks selected.");
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(
+        boolean confirm = PlanSyncDialogs.confirm(
                 this,
-                "Mark the selected task(s) as complete? (They will move to Completed Tasks.)",
+                controller,
                 "Confirm",
-                JOptionPane.YES_NO_OPTION
+                "Mark the selected task(s) as complete? (They will move to Completed Tasks.)"
         );
-        if (confirm != JOptionPane.YES_OPTION) return;
+        if (!confirm) return;
 
         activeModel.markCompletedByIndexes(indexes, completedModel);
-        JOptionPane.showMessageDialog(this, "Task(s) marked complete!", "Completed", JOptionPane.INFORMATION_MESSAGE);
+        // ✅ Removed unnecessary “task completed” pop-up
         controller.showActiveTasks();
     }
 
