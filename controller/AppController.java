@@ -2,6 +2,9 @@ package controller;
 
 import model.PlanSyncTimer;
 import model.PlanSyncSettings;
+import model.PlanSyncActiveTasksModel;
+import model.PlanSyncCompletedTasksModel;
+import model.PlanSyncRecurringTasksModel;
 import model.Theme;
 
 import views.*;
@@ -19,7 +22,14 @@ public class AppController {
     private PlanSyncTimer timer;
     private PlanSyncSettings settings;
 
+    private PlanSyncActiveTasksModel activeTasksModel;
+    private PlanSyncCompletedTasksModel completedTasksModel;
+    private PlanSyncRecurringTasksModel recurringTasksModel;
+
     private BottomNavBar navBar;
+
+    // Keep references so we can call refresh() when switching
+    private java.util.Map<String, JPanel> viewRegistry;
 
     public AppController() {
         initializeFrame();
@@ -34,7 +44,7 @@ public class AppController {
 
         frame = new JFrame("PlanSync");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1100, 800);
+        frame.setSize(1300, 800);
         frame.setLocationRelativeTo(null);
 
         cardLayout = new CardLayout();
@@ -48,36 +58,67 @@ public class AppController {
     private void initializeModels() {
         timer = new PlanSyncTimer();
         settings = new PlanSyncSettings();
+
+        activeTasksModel = new PlanSyncActiveTasksModel();
+        completedTasksModel = new PlanSyncCompletedTasksModel();
+        recurringTasksModel = new PlanSyncRecurringTasksModel();
     }
 
     // ================= VIEWS =================
     private void initializeViews() {
+
+        viewRegistry = new java.util.HashMap<>();
 
         HomeView homeView = new HomeView(this);
         TimerView timerView = new TimerView(this, timer);
         StopwatchView stopwatchView = new StopwatchView(this);
         TimeCalculatorView timeCalculatorView = new TimeCalculatorView(this);
         CalendarView calendarView = new CalendarView(this);
-        ActiveTasksView activeTasksView = new ActiveTasksView(this);
-        RecurringTasksView recurringTasksView = new RecurringTasksView(this);
-        CompletedTasksView completedTasksView = new CompletedTasksView(this);
+
+        ActiveTasksView activeTasksView = new ActiveTasksView(this, activeTasksModel);
+        AddActiveTaskView addActiveTaskView = new AddActiveTaskView(this, activeTasksModel);
+        DeleteActiveTasksView deleteActiveTasksView = new DeleteActiveTasksView(this, activeTasksModel);
+        MarkCompletedTasksView markCompletedTasksView = new MarkCompletedTasksView(this, activeTasksModel, completedTasksModel);
+
+        RecurringTasksView recurringTasksView = new RecurringTasksView(this, recurringTasksModel);
+        AddRecurringView addRecurringView = new AddRecurringView(this, recurringTasksModel);
+        DeleteRecurringView deleteRecurringView = new DeleteRecurringView(this, recurringTasksModel);
+
+        CompletedTasksView completedTasksView = new CompletedTasksView(this, completedTasksModel);
+        DeleteCompletedView deleteCompletedView = new DeleteCompletedView(this, completedTasksModel);
+
         SettingsView settingsView = new SettingsView(this, settings);
 
-        mainPanel.add(homeView, "HOME");
-        mainPanel.add(timerView, "TIMER");
-        mainPanel.add(stopwatchView, "STOPWATCH");
-        mainPanel.add(timeCalculatorView, "TIME_CALCULATOR");
-        mainPanel.add(calendarView, "CALENDAR");
-        mainPanel.add(activeTasksView, "ACTIVE");
-        mainPanel.add(recurringTasksView, "RECURRING");
-        mainPanel.add(completedTasksView, "COMPLETED");
-        mainPanel.add(settingsView, "SETTINGS");
+        registerView("HOME", homeView);
+        registerView("TIMER", timerView);
+        registerView("STOPWATCH", stopwatchView);
+        registerView("TIME_CALCULATOR", timeCalculatorView);
+        registerView("CALENDAR", calendarView);
+
+        registerView("ACTIVE", activeTasksView);
+        registerView("ADD_ACTIVE", addActiveTaskView);
+        registerView("DELETE_ACTIVE", deleteActiveTasksView);
+        registerView("MARK_COMPLETED", markCompletedTasksView);
+
+        registerView("RECURRING", recurringTasksView);
+        registerView("ADD_RECURRING", addRecurringView);
+        registerView("DELETE_RECURRING", deleteRecurringView);
+
+        registerView("COMPLETED", completedTasksView);
+        registerView("DELETE_COMPLETED", deleteCompletedView);
+
+        registerView("SETTINGS", settingsView);
 
         navBar = new BottomNavBar(this);
         navBar.putClientProperty("themed", true);
         frame.add(navBar, BorderLayout.SOUTH);
 
         showView("HOME");
+    }
+
+    private void registerView(String key, JPanel view) {
+        mainPanel.add(view, key);
+        viewRegistry.put(key, view);
     }
 
     // ================= THEME SYSTEM =================
@@ -173,6 +214,11 @@ public class AppController {
     public void showView(String name) {
 
         cardLayout.show(mainPanel, name);
+
+        JPanel view = viewRegistry != null ? viewRegistry.get(name) : null;
+        if (view instanceof RefreshableView refreshable) {
+            refreshable.refresh();
+        }
 
         if (navBar != null) {
             navBar.setActive(name);

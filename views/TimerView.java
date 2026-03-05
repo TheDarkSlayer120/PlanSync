@@ -30,7 +30,7 @@ public class TimerView extends JPanel {
 
         // ===== TITLE =====
         JLabel title = new JLabel("T I M E R", SwingConstants.CENTER);
-        title.setFont(new Font("SansSerif", Font.BOLD, 24));
+        title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         title.putClientProperty("on_base", true);
         add(title, BorderLayout.NORTH);

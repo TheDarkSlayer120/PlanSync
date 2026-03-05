@@ -1,28 +1,39 @@
 package views;
 
 import controller.AppController;
-import model.PlanSyncRecurringTasksModel;
+import model.PlanSyncActiveTasksModel;
+import model.PlanSyncCompletedTasksModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeleteRecurringView extends JPanel implements RefreshableView {
+/**
+ * MARK COMPLETED TASK page (GUI).
+ */
+public class MarkCompletedTasksView extends JPanel implements RefreshableView {
 
     private final AppController controller;
-    private final PlanSyncRecurringTasksModel recurringModel;
+    private final PlanSyncActiveTasksModel activeModel;
+    private final PlanSyncCompletedTasksModel completedModel;
 
     private final JTextArea taskArea;
     private final JTextField selectionField;
 
-    public DeleteRecurringView(AppController controller, PlanSyncRecurringTasksModel recurringModel) {
+    public MarkCompletedTasksView(
+            AppController controller,
+            PlanSyncActiveTasksModel activeModel,
+            PlanSyncCompletedTasksModel completedModel
+    ) {
+
         this.controller = controller;
-        this.recurringModel = recurringModel;
+        this.activeModel = activeModel;
+        this.completedModel = completedModel;
 
         setLayout(new BorderLayout());
 
-        JLabel title = new JLabel("D E L E T E   R E C U R R I N G   T A S K", SwingConstants.CENTER);
+        JLabel title = new JLabel("M A R K   C O M P L E T E D   T A S K", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.putClientProperty("on_base", true);
         title.setBorder(BorderFactory.createEmptyBorder(25, 10, 10, 10));
@@ -48,8 +59,8 @@ public class DeleteRecurringView extends JPanel implements RefreshableView {
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
-
         listPanel.add(scroll, BorderLayout.CENTER);
+
         center.add(listPanel, BorderLayout.CENTER);
 
         RoundedPanel inputRow = new RoundedPanel(35);
@@ -57,7 +68,7 @@ public class DeleteRecurringView extends JPanel implements RefreshableView {
         inputRow.setLayout(new BorderLayout(20, 0));
         inputRow.setBorder(BorderFactory.createEmptyBorder(18, 22, 18, 22));
 
-        JLabel prompt = new JLabel("TASK(s) TO DELETE (e.g. 1 3 4):");
+        JLabel prompt = new JLabel("MARK COMPLETED TASK(s) (e.g. 1 3 4):");
         prompt.setFont(new Font("SansSerif", Font.BOLD, 18));
         prompt.setForeground(Color.BLACK);
 
@@ -74,20 +85,21 @@ public class DeleteRecurringView extends JPanel implements RefreshableView {
         inputRow.add(fieldWrap, BorderLayout.CENTER);
 
         center.add(inputRow, BorderLayout.SOUTH);
+
         add(center, BorderLayout.CENTER);
 
         JPanel buttons = new JPanel(new GridLayout(1, 2, 35, 0));
         buttons.putClientProperty("themed_base", true);
-        buttons.setBorder(BorderFactory.createEmptyBorder(25, 260, 30, 260));
+        buttons.setBorder(BorderFactory.createEmptyBorder(25, 230, 30, 230));
 
         JButton cancel = bigButton("CANCEL");
-        JButton delete = bigButton("DELETE");
+        JButton complete = bigButton("MARK AS COMPLETE");
 
-        cancel.addActionListener(e -> controller.showRecurringTasks());
-        delete.addActionListener(e -> onDelete());
+        cancel.addActionListener(e -> controller.showActiveTasks());
+        complete.addActionListener(e -> onMarkComplete());
 
         buttons.add(cancel);
-        buttons.add(delete);
+        buttons.add(complete);
         add(buttons, BorderLayout.SOUTH);
     }
 
@@ -100,7 +112,7 @@ public class DeleteRecurringView extends JPanel implements RefreshableView {
         return b;
     }
 
-    private void onDelete() {
+    private void onMarkComplete() {
         List<Integer> indexes = parseSelections(selectionField.getText());
         if (indexes.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No valid tasks selected.", "Invalid Selection", JOptionPane.WARNING_MESSAGE);
@@ -109,16 +121,16 @@ public class DeleteRecurringView extends JPanel implements RefreshableView {
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Are you sure you want to delete the selected task(s)?",
-                "Confirm Delete",
+                "Mark the selected task(s) as complete? (They will move to Completed Tasks.)",
+                "Confirm",
                 JOptionPane.YES_NO_OPTION
         );
 
         if (confirm != JOptionPane.YES_OPTION) return;
 
-        recurringModel.deleteTasksByIndexes(indexes);
-        JOptionPane.showMessageDialog(this, "Task(s) deleted!", "Deleted", JOptionPane.INFORMATION_MESSAGE);
-        controller.showRecurringTasks();
+        activeModel.markCompletedByIndexes(indexes, completedModel);
+        JOptionPane.showMessageDialog(this, "Task(s) marked complete!", "Completed", JOptionPane.INFORMATION_MESSAGE);
+        controller.showActiveTasks();
     }
 
     private List<Integer> parseSelections(String input) {
@@ -127,7 +139,7 @@ public class DeleteRecurringView extends JPanel implements RefreshableView {
 
         String[] parts = input.split("\\s+");
         List<Integer> idx = new ArrayList<>();
-        int size = recurringModel.getTasks().size();
+        int size = activeModel.getTasks().size();
 
         for (String p : parts) {
             try {
@@ -144,7 +156,7 @@ public class DeleteRecurringView extends JPanel implements RefreshableView {
 
     @Override
     public void refresh() {
-        taskArea.setText(recurringModel.formatForDisplay());
+        taskArea.setText(activeModel.formatForDisplay());
         taskArea.setCaretPosition(0);
         selectionField.setText("");
     }
