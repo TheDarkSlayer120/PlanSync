@@ -1,3 +1,4 @@
+package modelTerminal;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -67,7 +68,11 @@ public class PlanSyncStopwatch {
                         displayRunning = false;
                         return Navigation.ACTIVE_TASKS;
                     }
-                    case "6" -> {                                // Go to Completed Tasks
+                    case "6" -> {                                // Go to Recurring Tasks
+                        displayRunning = false;
+                        return Navigation.RECURRING_TASKS;
+                    }
+                    case "7" -> {                                // Go to Completed Tasks
                         displayRunning = false;
                         return Navigation.COMPLETED_TASKS;
                     }
@@ -112,9 +117,10 @@ public class PlanSyncStopwatch {
         System.out.println("\n2. Go to Timer");
         System.out.println("3. Go to Time Calculator");
         System.out.println("4. Go to Calendar");
-        System.out.println("5. Go to Active Tasks");
-        System.out.println("6. Go to Completed Tasks");
-        System.out.println("0. Main Menu");
+        System.out.println("\n5. Go to Active Tasks");
+        System.out.println("6. Go to Recurring Tasks");
+        System.out.println("7. Go to Completed Tasks");
+        System.out.println("\n0. Main Menu");
         System.out.print("\nChoose option: ");
     }
 

@@ -1,3 +1,4 @@
+package modelTerminal;
 public enum Navigation {
     MAIN,
     TIMER,
@@ -5,6 +6,12 @@ public enum Navigation {
     TIME_CALCULATOR,
     CALENDAR,
     ACTIVE_TASKS,
+    RECURRING_TASKS,
     COMPLETED_TASKS,
-    EXIT
+    ADD_ACTIVE_TASK,
+    ADD_RECURRING_TASK,
+    DELETE_ACTIVE_TASK,
+    DELETE_RECURRING_TASK,
+    MARK_TASK_COMPLETED,
+    EXIT;
 }

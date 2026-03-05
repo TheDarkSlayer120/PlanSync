@@ -1,3 +1,4 @@
+package modelTerminal;
 public class PlanSync {
 
     public static void main(String[] args) {
@@ -11,6 +12,7 @@ public class PlanSync {
                 case TIME_CALCULATOR -> PlanSyncTimeCalculator.run();
                 case CALENDAR -> PlanSyncCalendar.run();
                 case ACTIVE_TASKS -> PlanSyncActiveTasks.run();
+                case RECURRING_TASKS -> PlanSyncRecurringTasks.run();
                 case COMPLETED_TASKS -> PlanSyncCompletedTasks.run();
                 default -> Navigation.EXIT;
             };
@@ -26,9 +28,10 @@ public class PlanSync {
         System.out.println("2. Stopwatch");
         System.out.println("3. Time Calculator");
         System.out.println("4. Calendar");
-        System.out.println("5. Active Tasks");
-        System.out.println("6. Completed Tasks");
-        System.out.println("0. Exit");
+        System.out.println("\n5. Active Tasks");
+        System.out.println("6. Recurring Tasks");
+        System.out.println("7. Completed Tasks");
+        System.out.println("\n0. Exit");
         System.out.print("\nChoose option: ");
 
         return switch (ConsoleUtils.scanner.nextLine()) {
@@ -37,7 +40,8 @@ public class PlanSync {
             case "3" -> Navigation.TIME_CALCULATOR;
             case "4" -> Navigation.CALENDAR;
             case "5" -> Navigation.ACTIVE_TASKS;
-            case "6" -> Navigation.COMPLETED_TASKS;
+            case "6" -> Navigation.RECURRING_TASKS;
+            case "7" -> Navigation.COMPLETED_TASKS;
             case "0" -> Navigation.EXIT;
             default -> Navigation.MAIN;
         };

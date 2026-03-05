@@ -1,3 +1,4 @@
+package modelTerminal;
 import java.util.Scanner;
 
 public class ConsoleUtils {
