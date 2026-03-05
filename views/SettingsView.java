@@ -11,62 +11,80 @@ import java.util.Map;
 
 public class SettingsView extends JPanel {
 
+    private final AppController controller;
     private final PlanSyncSettings settings;
+
     private JTextField usernameField;
     private Theme selectedTheme;
+    private boolean selectedDarkMode;
 
     private final Map<Theme, JPanel> themePanels = new HashMap<>();
+    private final Map<String, JPanel> modePanels = new HashMap<>();
 
     public SettingsView(AppController controller, PlanSyncSettings settings) {
 
+        this.controller = controller;
         this.settings = settings;
+
         this.selectedTheme = settings.getSelectedTheme();
+        this.selectedDarkMode = settings.isDarkMode();
 
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
 
         // ================= TITLE =================
         JLabel title = new JLabel("S E T T I N G S", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        title.putClientProperty("on_base", true);
         add(title, BorderLayout.NORTH);
 
-        // ================= CENTER PANEL =================
-        JPanel center = new JPanel();
-        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
-        center.setBackground(Color.WHITE);
-        add(center, BorderLayout.CENTER);
+        // ================= OUTER CENTER =================
+        JPanel outer = new JPanel();
+        outer.setLayout(new BoxLayout(outer, BoxLayout.Y_AXIS));
+        outer.setOpaque(false);
+        outer.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
+        add(outer, BorderLayout.CENTER);
 
-        // ================= USERNAME TITLE =================
+        // ================= ROUNDED CONTENT PANEL =================
+        JPanel content = new RoundedPanel(30);
+        content.putClientProperty("themed", true);
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setBorder(BorderFactory.createEmptyBorder(20, 40, 25, 40));
+        content.setMaximumSize(new Dimension(Integer.MAX_VALUE, 700));
+        content.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        outer.add(Box.createVerticalStrut(10));
+        outer.add(content);
+        outer.add(Box.createVerticalGlue());
+
+        // ================= USERNAME =================
         JLabel usernameTitle = new JLabel("USERNAME:");
         usernameTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
         usernameTitle.setFont(new Font("SansSerif", Font.BOLD, 14));
 
-        center.add(Box.createVerticalStrut(20));
-        center.add(usernameTitle);
-        center.add(Box.createVerticalStrut(10));
+        content.add(Box.createVerticalStrut(10));
+        content.add(usernameTitle);
+        content.add(Box.createVerticalStrut(10));
 
-        // ================= USERNAME FIELD =================
         usernameField = new JTextField(settings.getUsername());
         usernameField.setMaximumSize(new Dimension(400, 40));
         usernameField.setHorizontalAlignment(JTextField.CENTER);
         usernameField.setFont(new Font("SansSerif", Font.BOLD, 14));
+        content.add(usernameField);
 
-        center.add(usernameField);
-        center.add(Box.createVerticalStrut(20));
+        content.add(Box.createVerticalStrut(30));
 
-        // ================= SELECT THEME TITLE =================
+        // ================= SELECT THEME =================
         JLabel themeTitle = new JLabel("SELECT THEME:");
         themeTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
         themeTitle.setFont(new Font("SansSerif", Font.BOLD, 14));
 
-        center.add(themeTitle);
-        center.add(Box.createVerticalStrut(20));
+        content.add(themeTitle);
+        content.add(Box.createVerticalStrut(20));
 
-        // ================= THEME GRID =================
         JPanel grid = new JPanel(new GridLayout(3, 3, 20, 20));
-        grid.setBackground(Color.WHITE);
-        grid.setMaximumSize(new Dimension(600, 300));
+        grid.setOpaque(false);
+        grid.setMaximumSize(new Dimension(600, 200));
 
         for (Theme theme : settings.getThemes()) {
             JPanel panel = createThemePanel(theme);
@@ -74,28 +92,52 @@ public class SettingsView extends JPanel {
             grid.add(panel);
         }
 
-        center.add(grid);
-        center.add(Box.createVerticalStrut(20));
+        content.add(grid);
+        content.add(Box.createVerticalStrut(30));
 
-        // ================= SAVE BUTTON =================
+        // ================= SELECT MODE =================
+        JLabel modeTitle = new JLabel("SELECT MODE:");
+        modeTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        modeTitle.setFont(new Font("SansSerif", Font.BOLD, 14));
+
+        content.add(modeTitle);
+        content.add(Box.createVerticalStrut(20));
+
+        JPanel modeRow = new JPanel(new GridLayout(1, 2, 20, 0));
+        modeRow.setOpaque(false);
+        modeRow.setMaximumSize(new Dimension(520, 85));
+
+        JPanel lightPanel = createModePanel("LIGHT");
+        JPanel darkPanel  = createModePanel("DARK");
+
+        modePanels.put("LIGHT", lightPanel);
+        modePanels.put("DARK", darkPanel);
+
+        modeRow.add(lightPanel);
+        modeRow.add(darkPanel);
+
+        content.add(modeRow);
+        content.add(Box.createVerticalStrut(30));
+
+        // ================= SAVE =================
         JButton save = new JButton("SAVE");
         save.setAlignmentX(Component.CENTER_ALIGNMENT);
         save.setFocusPainted(false);
-        save.setFont(new Font("SansSerif", Font.BOLD, 14));
+        save.setFont(new Font("SansSerif", Font.BOLD, 18));
 
-        Dimension size = new Dimension(200, 45);
+        Dimension size = new Dimension(300, 45);
         save.setPreferredSize(size);
         save.setMaximumSize(size);
         save.setMinimumSize(size);
 
-        center.add(save);
+        content.add(save);
 
         updateHighlight();
 
-        // ================= SAVE ACTION =================
         save.addActionListener(e -> {
             settings.setUsername(usernameField.getText());
             settings.setSelectedTheme(selectedTheme);
+            settings.setDarkMode(selectedDarkMode);
             settings.saveToFile();
             controller.applyTheme();
         });
@@ -106,14 +148,15 @@ public class SettingsView extends JPanel {
 
         JPanel panel = new JPanel(new GridLayout(1, 2));
         panel.setPreferredSize(new Dimension(120, 60));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2));
+        panel.setOpaque(false);
 
         JPanel light = new JPanel();
         light.setBackground(theme.getLightColor());
+        light.putClientProperty("ignore_theme", true);
 
         JPanel dark = new JPanel();
         dark.setBackground(theme.getDarkColor());
+        dark.putClientProperty("ignore_theme", true);
 
         panel.add(light);
         panel.add(dark);
@@ -129,18 +172,76 @@ public class SettingsView extends JPanel {
         return panel;
     }
 
+    // ================= MODE PANEL (FIXED LABEL BAR COLORS) =================
+    private JPanel createModePanel(String modeName) {
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setPreferredSize(new Dimension(220, 65));
+        panel.setOpaque(false);
+
+        // preview area (top)
+        JPanel preview = new JPanel();
+        if ("LIGHT".equalsIgnoreCase(modeName)) {
+            preview.setBackground(Color.WHITE);
+        } else {
+            preview.setBackground(new Color(35, 35, 35));
+        }
+        preview.putClientProperty("ignore_theme", true);
+        preview.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panel.add(preview, BorderLayout.CENTER);
+
+        JLabel label = new JLabel(modeName, SwingConstants.CENTER);
+        label.setFont(new Font("SansSerif", Font.BOLD, 14));
+        label.setOpaque(true);
+        label.putClientProperty("ignore_theme", true);
+        label.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
+
+        if ("LIGHT".equalsIgnoreCase(modeName)) {
+            label.setBackground(Color.WHITE);
+            label.setForeground(Color.BLACK);
+        } else {
+            label.setBackground(new Color(35, 35, 35));
+            label.setForeground(Color.WHITE);
+        }
+
+        panel.add(label, BorderLayout.SOUTH);
+
+        panel.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                selectedDarkMode = "DARK".equalsIgnoreCase(modeName);
+                updateHighlight();
+            }
+        });
+
+        return panel;
+    }
+
     // ================= HIGHLIGHT SELECTED =================
     private void updateHighlight() {
 
-        for (Map.Entry<Theme, JPanel> entry : themePanels.entrySet()) {
+        Color selectedBorder = selectedDarkMode ? Color.WHITE : Color.BLACK;
+        Color unselectedBorder = selectedDarkMode ? new Color(140, 140, 140) : Color.GRAY;
 
+        for (Map.Entry<Theme, JPanel> entry : themePanels.entrySet()) {
             if (entry.getKey().equals(selectedTheme)) {
-                entry.getValue().setBorder(
-                        BorderFactory.createLineBorder(Color.BLACK, 4));
+                entry.getValue().setBorder(BorderFactory.createLineBorder(selectedBorder, 4));
             } else {
-                entry.getValue().setBorder(
-                        BorderFactory.createLineBorder(Color.GRAY, 2));
+                entry.getValue().setBorder(BorderFactory.createLineBorder(unselectedBorder, 2));
             }
+        }
+
+        JPanel lightPanel = modePanels.get("LIGHT");
+        JPanel darkPanel = modePanels.get("DARK");
+
+        if (lightPanel != null) {
+            boolean active = !selectedDarkMode;
+            lightPanel.setBorder(BorderFactory.createLineBorder(active ? selectedBorder : unselectedBorder, active ? 4 : 2));
+        }
+
+        if (darkPanel != null) {
+            boolean active = selectedDarkMode;
+            darkPanel.setBorder(BorderFactory.createLineBorder(active ? selectedBorder : unselectedBorder, active ? 4 : 2));
         }
 
         repaint();

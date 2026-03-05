@@ -29,13 +29,14 @@ public class StopwatchView extends JPanel {
         JLabel title = new JLabel("S T O P W A T C H", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        title.putClientProperty("on_base", true);
         add(title, BorderLayout.NORTH);
 
         // ================= CENTER =================
         JPanel center = new JPanel();
         center.setOpaque(false);
         center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
-        center.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40)); // ✅ match Timer spacing
+        center.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
         add(center, BorderLayout.CENTER);
 
         // ================= DISPLAY PANEL =================
@@ -43,7 +44,7 @@ public class StopwatchView extends JPanel {
         displayPanel.putClientProperty("themed", true);
         displayPanel.setLayout(new BorderLayout());
         displayPanel.setPreferredSize(new Dimension(400, 120));
-        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140)); // ✅ allow stretch
+        displayPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
         displayPanel.setBorder(BorderFactory.createEmptyBorder(25, 40, 25, 40));
 
         timeLabel = new JLabel("00:00.000", SwingConstants.CENTER);
@@ -57,7 +58,7 @@ public class StopwatchView extends JPanel {
         // ================= BUTTON ROW =================
         JPanel buttonRow = new JPanel(new GridLayout(1, 4, 20, 0));
         buttonRow.setOpaque(false);
-        buttonRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55)); // ✅ allow stretch
+        buttonRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 55));
 
         resetButton = createButton("RESET");
         stopButton = createButton("STOP");
@@ -70,14 +71,14 @@ public class StopwatchView extends JPanel {
         buttonRow.add(startButton);
 
         center.add(buttonRow);
-        center.add(Box.createVerticalStrut(25));
+        center.add(Box.createVerticalStrut(30));
 
         // ================= LAP PANEL =================
         JPanel lapPanel = new RoundedPanel(40);
         lapPanel.putClientProperty("themed", true);
         lapPanel.setLayout(new BorderLayout());
-        lapPanel.setPreferredSize(new Dimension(400, 200));
-        lapPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300)); // ✅ allow stretch
+        lapPanel.setPreferredSize(new Dimension(400, 250));
+        lapPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
         lapPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
         lapModel = new DefaultListModel<>();
@@ -87,7 +88,6 @@ public class StopwatchView extends JPanel {
         lapList.setOpaque(false);
         lapList.setBackground(new Color(0, 0, 0, 0));
 
-        // Center lap text
         lapList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(
@@ -120,7 +120,6 @@ public class StopwatchView extends JPanel {
 
         // ================= LISTENER =================
         stopwatch.setListener(new PlanSyncStopwatch.StopwatchListener() {
-
             @Override
             public void onTick(long elapsedMillis) {
                 SwingUtilities.invokeLater(() ->
@@ -130,9 +129,7 @@ public class StopwatchView extends JPanel {
 
             @Override
             public void onLapRecorded(String lapText) {
-                SwingUtilities.invokeLater(() ->
-                        lapModel.addElement(lapText)
-                );
+                SwingUtilities.invokeLater(() -> lapModel.addElement(lapText));
             }
 
             @Override
@@ -154,7 +151,7 @@ public class StopwatchView extends JPanel {
     private JButton createButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
-        b.setFont(new Font("SansSerif", Font.BOLD, 14));
+        b.setFont(new Font("SansSerif", Font.BOLD, 18));
         return b;
     }
 }

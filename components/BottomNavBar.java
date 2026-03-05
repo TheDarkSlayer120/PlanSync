@@ -23,7 +23,6 @@ public class BottomNavBar extends JPanel {
         setPreferredSize(new Dimension(0, 60));
         setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
 
-        // This panel should be theme controlled
         putClientProperty("themed", true);
 
         String[] labels = {
@@ -51,14 +50,12 @@ public class BottomNavBar extends JPanel {
         };
 
         for (int i = 0; i < labels.length; i++) {
-
             JButton btn = createNavButton(labels[i], actions[i]);
             buttons.put(actions[i], btn);
             add(btn);
         }
     }
 
-    // ================= BUTTON CREATION =================
     private JButton createNavButton(String text, String action) {
 
         JButton btn = new JButton(text);
@@ -73,36 +70,28 @@ public class BottomNavBar extends JPanel {
         btn.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
         btn.putClientProperty("active", false);
+        btn.putClientProperty("nav_button", true); // ✅ prevents AppController from enlarging nav font
 
         btn.addActionListener(e -> controller.showView(action));
 
         return btn;
     }
 
-    // ================= ACTIVE PAGE HANDLING =================
     public void setActive(String pageName) {
 
-        // Remove highlight from previous
         if (activeButton != null) {
             activeButton.putClientProperty("active", false);
-            activeButton.setBorder(
-                    BorderFactory.createEmptyBorder(5, 10, 5, 10)
-            );
+            activeButton.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
             activeButton.setBackground(defaultColor);
         }
 
-        // Set new active
         JButton newActive = buttons.get(pageName);
 
         if (newActive != null) {
             newActive.putClientProperty("active", true);
 
-            // Modern bottom underline indicator
             newActive.setBorder(
-                    BorderFactory.createMatteBorder(
-                            0, 0, 4, 0,
-                            new Color(70, 110, 200)
-                    )
+                    BorderFactory.createMatteBorder(0, 0, 4, 0, new Color(70, 110, 200))
             );
 
             activeButton = newActive;

@@ -14,6 +14,9 @@ public class PlanSyncSettings {
     private String username = "USERNAME";
     private Theme selectedTheme;
 
+    // false = light mode, true = dark mode
+    private boolean darkMode = false;
+
     private final List<Theme> themes = new ArrayList<>();
 
     public PlanSyncSettings() {
@@ -77,6 +80,7 @@ public class PlanSyncSettings {
             Properties props = new Properties();
             props.setProperty("username", username);
             props.setProperty("theme", selectedTheme.getName());
+            props.setProperty("mode", darkMode ? "dark" : "light");
 
             FileOutputStream fos = new FileOutputStream(FILE_NAME);
             props.store(fos, "PlanSync Settings");
@@ -102,6 +106,9 @@ public class PlanSyncSettings {
 
             username = props.getProperty("username", username);
             String themeName = props.getProperty("theme");
+
+            String mode = props.getProperty("mode", "light");
+            darkMode = "dark".equalsIgnoreCase(mode);
 
             if (themeName != null) {
                 for (Theme t : themes) {
@@ -136,5 +143,13 @@ public class PlanSyncSettings {
 
     public void setSelectedTheme(Theme theme) {
         this.selectedTheme = theme;
+    }
+
+    public boolean isDarkMode() {
+        return darkMode;
+    }
+
+    public void setDarkMode(boolean darkMode) {
+        this.darkMode = darkMode;
     }
 }

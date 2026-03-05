@@ -39,7 +39,6 @@ public class AppController {
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
-        mainPanel.setBackground(Color.WHITE);
 
         frame.setLayout(new BorderLayout());
         frame.add(mainPanel, BorderLayout.CENTER);
@@ -88,34 +87,84 @@ public class AppController {
         Color light = theme.getLightColor();
         Color dark = theme.getDarkColor();
 
-        frame.getContentPane().setBackground(Color.WHITE);
-        mainPanel.setBackground(Color.WHITE);
+        boolean darkMode = settings.isDarkMode();
+        Color baseBg = darkMode ? new Color(25, 25, 25) : Color.WHITE;
 
-        applyThemeToComponent(frame, light, dark);
+        frame.getContentPane().setBackground(baseBg);
+        mainPanel.setBackground(baseBg);
+
+        applyThemeToComponent(frame, light, dark, baseBg, darkMode);
 
         frame.repaint();
     }
 
-    private void applyThemeToComponent(Component comp, Color light, Color dark) {
+    private void applyThemeToComponent(
+            Component comp,
+            Color light,
+            Color dark,
+            Color baseBg,
+            boolean darkMode
+    ) {
 
-        // Rounded panels / themed panels
+        // Allow components to opt-out (used for Settings preview blocks)
+        if (comp instanceof JComponent jc) {
+            Object ignore = jc.getClientProperty("ignore_theme");
+            if (Boolean.TRUE.equals(ignore)) return;
+        }
+
+        // Panels
         if (comp instanceof JPanel panel) {
             Object themed = panel.getClientProperty("themed");
             if (Boolean.TRUE.equals(themed)) {
                 panel.setBackground(light);
+            } else {
+                panel.setBackground(baseBg);
+            }
+
+            Object themedBase = panel.getClientProperty("themed_base");
+            if (Boolean.TRUE.equals(themedBase)) {
+                panel.setBackground(baseBg);
             }
         }
 
-        // Buttons
+        // Buttons (background + readable font; nav buttons excluded)
         if (comp instanceof JButton button) {
             button.setBackground(dark);
-            button.setForeground(Color.BLACK);
+
+            boolean isNav = false;
+            if (button instanceof JComponent jc) {
+                Object nav = jc.getClientProperty("nav_button");
+                isNav = Boolean.TRUE.equals(nav);
+            }
+
+            if (!isNav) {
+                Font f = button.getFont();
+                float size = Math.max(16f, f.getSize2D());
+                button.setFont(f.deriveFont(Font.BOLD, size));
+            }
+        }
+
+        // ✅ FIX: Titles/headers should switch color BOTH ways
+        if (comp instanceof JLabel label) {
+            if (label instanceof JComponent jc) {
+                Object onBase = jc.getClientProperty("on_base");
+                if (Boolean.TRUE.equals(onBase)) {
+                    label.setForeground(darkMode ? Color.WHITE : Color.BLACK);
+                }
+            }
+        }
+
+        // Text fields: always readable (white bg, black text)
+        if (comp instanceof JTextField field) {
+            field.setBackground(Color.WHITE);
+            field.setForeground(Color.BLACK);
+            field.setCaretColor(Color.BLACK);
         }
 
         // Recursively apply
         if (comp instanceof Container container) {
             for (Component child : container.getComponents()) {
-                applyThemeToComponent(child, light, dark);
+                applyThemeToComponent(child, light, dark, baseBg, darkMode);
             }
         }
     }
@@ -126,10 +175,10 @@ public class AppController {
         cardLayout.show(mainPanel, name);
 
         if (navBar != null) {
-            navBar.setActive(name);   // tells navbar which page is active
+            navBar.setActive(name);
         }
 
-        applyTheme(); // re-apply theme after switch
+        applyTheme();
 
         mainPanel.revalidate();
         mainPanel.repaint();
@@ -145,7 +194,6 @@ public class AppController {
     public void showCompletedTasks() { showView("COMPLETED"); }
     public void showSettings() { showView("SETTINGS"); }
 
-    // ================= GETTERS =================
     public PlanSyncSettings getSettings() {
         return settings;
     }
