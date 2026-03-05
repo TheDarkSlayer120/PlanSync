@@ -1,0 +1,312 @@
+package views;
+
+import controller.AppController;
+import model.PlanSyncActiveTasksModel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.time.format.DateTimeParseException;
+
+/**
+ * EDIT ACTIVE TASK page (GUI).
+ * Workflow:
+ * 1) User enters Task ID (as displayed in the list) and presses LOAD.
+ * 2) User edits name/description/date and presses SAVE.
+ */
+public class EditActiveTaskView extends JPanel implements RefreshableView {
+
+    private final AppController controller;
+    private final PlanSyncActiveTasksModel activeModel;
+
+    private final JTextArea taskArea;
+    private final JScrollPane scroll;
+
+    private final JTextField idField;
+    private final JTextField nameField;
+    private final JTextArea descArea;
+    private final JTextField dateField;
+
+    private Integer loadedId = null; // 1-based
+
+    public EditActiveTaskView(AppController controller, PlanSyncActiveTasksModel activeModel) {
+
+        this.controller = controller;
+        this.activeModel = activeModel;
+
+        setLayout(new BorderLayout());
+
+        JLabel title = new JLabel("E D I T   A C T I V E   T A S K", SwingConstants.CENTER);
+        title.setFont(new Font("SansSerif", Font.BOLD, 26));
+        title.putClientProperty("on_base", true);
+        title.setBorder(BorderFactory.createEmptyBorder(25, 10, 10, 10));
+        add(title, BorderLayout.NORTH);
+
+        // Make the edit screen scrollable so smaller windows don't squash the UI.
+        // The bottom navigation bar (outside this view) remains visible.
+        JPanel content = new JPanel();
+        content.putClientProperty("themed_base", true);
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setBorder(BorderFactory.createEmptyBorder(20, 120, 20, 120));
+
+        // ===== Task list =====
+        RoundedPanel listPanel = new RoundedPanel(35);
+        listPanel.putClientProperty("themed", true);
+        listPanel.setLayout(new BorderLayout());
+        listPanel.setBorder(BorderFactory.createEmptyBorder(22, 28, 22, 28));
+
+        taskArea = new JTextArea();
+        taskArea.setEditable(false);
+        taskArea.setLineWrap(true);
+        taskArea.setWrapStyleWord(false);
+        taskArea.setFont(new Font("Monospaced", Font.BOLD, 14));
+        taskArea.setOpaque(false);
+
+        scroll = new JScrollPane(taskArea);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+
+        scroll.getViewport().addComponentListener(new ComponentAdapter() {
+            @Override public void componentResized(ComponentEvent e) {
+                updateListText();
+            }
+        });
+
+        listPanel.add(scroll, BorderLayout.CENTER);
+        listPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        content.add(listPanel);
+        content.add(Box.createVerticalStrut(18));
+
+        // ===== Edit form =====
+        JPanel formWrap = new JPanel(new GridBagLayout());
+        formWrap.putClientProperty("themed_base", true);
+        formWrap.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.gridx = 0;
+        gc.gridy = 0;
+        gc.insets = new Insets(10, 0, 8, 0);
+        gc.fill = GridBagConstraints.HORIZONTAL;
+        gc.weightx = 1;
+
+        // ID row + LOAD button
+        RoundedPanel idRow = new RoundedPanel(35);
+        idRow.putClientProperty("themed", true);
+        idRow.setLayout(new BorderLayout(20, 0));
+        idRow.setBorder(BorderFactory.createEmptyBorder(14, 18, 14, 18));
+
+        JLabel prompt = new JLabel("TASK ID TO EDIT:");
+        prompt.setFont(new Font("SansSerif", Font.BOLD, 18));
+        prompt.setForeground(Color.BLACK);
+
+        RoundedPanel idFieldWrap = roundedFieldPanel();
+        idField = new JTextField();
+        idField.setFont(new Font("SansSerif", Font.BOLD, 18));
+        idFieldWrap.add(idField, BorderLayout.CENTER);
+
+        JButton loadBtn = bigButton("LOAD");
+        loadBtn.setPreferredSize(new Dimension(170, 50));
+        loadBtn.addActionListener(e -> onLoad());
+
+        idRow.add(prompt, BorderLayout.WEST);
+        idRow.add(idFieldWrap, BorderLayout.CENTER);
+        idRow.add(loadBtn, BorderLayout.EAST);
+
+        formWrap.add(idRow, gc);
+
+        // Name
+        gc.gridy++;
+        formWrap.add(sectionLabel("TASK NAME:"), gc);
+
+        gc.gridy++;
+        RoundedPanel namePanel = roundedFieldPanel();
+        nameField = new JTextField();
+        nameField.setFont(new Font("SansSerif", Font.BOLD, 18));
+        namePanel.add(nameField, BorderLayout.CENTER);
+        formWrap.add(namePanel, gc);
+
+        // Description
+        gc.gridy++;
+        formWrap.add(sectionLabel("TASK DESCRIPTION:"), gc);
+
+        gc.gridy++;
+        RoundedPanel descPanel = new RoundedPanel(28);
+        descPanel.putClientProperty("themed", true);
+        descPanel.setLayout(new BorderLayout());
+        descPanel.setBorder(BorderFactory.createEmptyBorder(14, 18, 14, 18));
+
+        descArea = new JTextArea(4, 20);
+        descArea.setLineWrap(true);
+        descArea.setWrapStyleWord(true);
+        descArea.setFont(new Font("SansSerif", Font.BOLD, 16));
+
+        JScrollPane descScroll = new JScrollPane(descArea);
+        descScroll.setBorder(BorderFactory.createEmptyBorder());
+        descPanel.add(descScroll, BorderLayout.CENTER);
+        formWrap.add(descPanel, gc);
+
+        // Date
+        gc.gridy++;
+        JPanel dateRow = new JPanel(new BorderLayout(20, 0));
+        dateRow.putClientProperty("themed_base", true);
+
+        JLabel dateLabel = sectionLabel("DATE (DD/MM/YYYY):");
+        dateRow.add(dateLabel, BorderLayout.WEST);
+
+        RoundedPanel datePanel = roundedFieldPanel();
+        dateField = new JTextField();
+        dateField.setFont(new Font("SansSerif", Font.BOLD, 18));
+        datePanel.add(dateField, BorderLayout.CENTER);
+        dateRow.add(datePanel, BorderLayout.CENTER);
+
+        formWrap.add(dateRow, gc);
+
+        content.add(formWrap);
+        content.add(Box.createVerticalStrut(18));
+
+        // Buttons (kept inside the scrollable content so they don't overlap/squash)
+        JPanel buttons = new JPanel(new GridLayout(1, 2, 35, 0));
+        buttons.putClientProperty("themed_base", true);
+        buttons.setBorder(BorderFactory.createEmptyBorder(25, 240, 30, 240));
+        buttons.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton cancel = bigButton("CANCEL");
+        JButton save = bigButton("SAVE");
+
+        cancel.addActionListener(e -> controller.showActiveTasks());
+        save.addActionListener(e -> onSave());
+
+        buttons.add(cancel);
+        buttons.add(save);
+        content.add(buttons);
+
+        JScrollPane contentScroll = new JScrollPane(content);
+        contentScroll.setBorder(BorderFactory.createEmptyBorder());
+        contentScroll.setOpaque(false);
+        contentScroll.getViewport().setOpaque(false);
+        contentScroll.getVerticalScrollBar().setUnitIncrement(16);
+        add(contentScroll, BorderLayout.CENTER);
+
+        setEditingEnabled(false);
+    }
+
+    private void setEditingEnabled(boolean enabled) {
+        nameField.setEnabled(enabled);
+        descArea.setEnabled(enabled);
+        dateField.setEnabled(enabled);
+    }
+
+    private void onLoad() {
+        String raw = idField.getText().trim();
+        int id;
+        try {
+            id = Integer.parseInt(raw);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Please enter a valid numeric task ID.", "Invalid ID", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        PlanSyncActiveTasksModel.Task t = activeModel.getTaskById(id);
+        if (t == null) {
+            JOptionPane.showMessageDialog(this, "No active task found with ID " + id + ".", "Not Found", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        loadedId = id;
+        nameField.setText(t.name);
+        descArea.setText(t.description);
+        dateField.setText(t.deadline.format(PlanSyncActiveTasksModel.getDateFormatter()));
+        setEditingEnabled(true);
+
+        // ✅ Removed success pop-up on load
+    }
+
+    private void onSave() {
+        if (loadedId == null) {
+            JOptionPane.showMessageDialog(this, "Load a task first (enter ID and press LOAD).", "Nothing Loaded", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String name = nameField.getText().trim();
+        String desc = descArea.getText().trim();
+        String date = dateField.getText().trim();
+
+        if (name.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a task name.", "Missing Name", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (desc.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a task description.", "Missing Description", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (date.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a deadline date (DD/MM/YYYY).", "Missing Date", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            activeModel.updateTaskById(loadedId, name, desc, date);
+            JOptionPane.showMessageDialog(this, "Active task updated!", "Saved", JOptionPane.INFORMATION_MESSAGE);
+            controller.showActiveTasks();
+        } catch (DateTimeParseException ex) {
+            JOptionPane.showMessageDialog(this, "Invalid date format. Please use DD/MM/YYYY.", "Invalid Date", JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid ID", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private JLabel sectionLabel(String text) {
+        JLabel l = new JLabel(text, SwingConstants.CENTER);
+        l.setFont(new Font("SansSerif", Font.BOLD, 18));
+        l.putClientProperty("on_base", true);
+        return l;
+    }
+
+    private RoundedPanel roundedFieldPanel() {
+        RoundedPanel p = new RoundedPanel(28);
+        p.putClientProperty("themed", true);
+        p.setLayout(new BorderLayout());
+        p.setBorder(BorderFactory.createEmptyBorder(10, 16, 10, 16));
+        return p;
+    }
+
+    private JButton bigButton(String text) {
+        JButton b = new JButton(text);
+        b.setFocusPainted(false);
+        b.setFont(new Font("SansSerif", Font.BOLD, 18));
+        b.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
+        return b;
+    }
+
+    private int getWidthChars() {
+        int px = scroll.getViewport().getExtentSize().width;
+        Insets in = taskArea.getInsets();
+        px -= (in.left + in.right);
+        if (px <= 0) return 93;
+
+        FontMetrics fm = taskArea.getFontMetrics(taskArea.getFont());
+        int charW = fm.charWidth('=');
+        if (charW <= 0) charW = Math.max(1, fm.charWidth('W'));
+
+        int chars = px / charW;
+        return Math.max(40, chars);
+    }
+
+    private void updateListText() {
+        taskArea.setText(activeModel.formatForDisplay(getWidthChars()));
+        taskArea.setCaretPosition(0);
+    }
+
+    @Override
+    public void refresh() {
+        updateListText();
+        idField.setText("");
+        nameField.setText("");
+        descArea.setText("");
+        dateField.setText("");
+        loadedId = null;
+        setEditingEnabled(false);
+    }
+}

@@ -53,17 +53,20 @@ public class RecurringTasksView extends JPanel implements RefreshableView {
 
         listPanel.add(scroll, BorderLayout.CENTER);
 
-        JPanel buttons = new JPanel(new GridLayout(1, 2, 35, 0));
+        JPanel buttons = new JPanel(new GridLayout(1, 3, 25, 0));
         buttons.putClientProperty("themed_base", true);
-        buttons.setBorder(BorderFactory.createEmptyBorder(18, 210, 25, 210));
+        buttons.setBorder(BorderFactory.createEmptyBorder(18, 160, 25, 160));
 
         JButton deleteBtn = bigButton("DELETE RECURRING TASK");
+        JButton editBtn = bigButton("EDIT RECURRING TASK");
         JButton addBtn = bigButton("NEW RECURRING TASK");
 
         deleteBtn.addActionListener(e -> controller.showView("DELETE_RECURRING"));
+        editBtn.addActionListener(e -> controller.showView("EDIT_RECURRING"));
         addBtn.addActionListener(e -> controller.showView("ADD_RECURRING"));
 
         buttons.add(deleteBtn);
+        buttons.add(editBtn);
         buttons.add(addBtn);
 
         JPanel center = new JPanel(new BorderLayout());

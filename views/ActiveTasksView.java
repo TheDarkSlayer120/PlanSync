@@ -53,20 +53,23 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
 
         listPanel.add(scroll, BorderLayout.CENTER);
 
-        JPanel buttons = new JPanel(new GridLayout(1, 3, 25, 0));
+        JPanel buttons = new JPanel(new GridLayout(1, 4, 20, 0));
         buttons.putClientProperty("themed_base", true);
-        buttons.setBorder(BorderFactory.createEmptyBorder(18, 120, 25, 120));
+        buttons.setBorder(BorderFactory.createEmptyBorder(18, 90, 25, 90));
 
         JButton deleteBtn = bigButton("DELETE ACTIVE TASK");
         JButton completeBtn = bigButton("MARK COMPLETED");
+        JButton editBtn = bigButton("EDIT ACTIVE TASK");
         JButton addBtn = bigButton("NEW ACTIVE TASK");
 
         deleteBtn.addActionListener(e -> controller.showView("DELETE_ACTIVE"));
         completeBtn.addActionListener(e -> controller.showView("MARK_COMPLETED"));
+        editBtn.addActionListener(e -> controller.showView("EDIT_ACTIVE"));
         addBtn.addActionListener(e -> controller.showView("ADD_ACTIVE"));
 
         buttons.add(deleteBtn);
         buttons.add(completeBtn);
+        buttons.add(editBtn);
         buttons.add(addBtn);
 
         JPanel center = new JPanel(new BorderLayout());

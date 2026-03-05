@@ -82,8 +82,8 @@ public class TimeCalculatorView extends JPanel {
         center.add(buildDurationBetweenTimesPanel());
         center.add(Box.createVerticalStrut(18));
         center.add(buildDurationBetweenDatesPanel());
-        center.add(Box.createVerticalStrut(18));
-        center.add(buildBottomDecorBar());
+        // Removed the bottom decorative pill bar that sat between the content
+        // and the navigation bar.
 
         return outer;
     }
@@ -454,29 +454,6 @@ public class TimeCalculatorView extends JPanel {
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Invalid Date", JOptionPane.WARNING_MESSAGE);
         }
-    }
-
-    /* ========================= BOTTOM DECOR ========================= */
-
-    private JComponent buildBottomDecorBar() {
-        RoundedPanel bar = new RoundedPanel(35);
-        bar.putClientProperty("themed", true);
-        bar.setLayout(new BorderLayout());
-        bar.setBorder(new EmptyBorder(14, 18, 14, 18));
-        bar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 85));
-
-        JPanel pills = new JPanel(new GridLayout(1, 10, 12, 0));
-        pills.setOpaque(false);
-
-        for (int i = 0; i < 10; i++) {
-            RoundedPanel p = new RoundedPanel(18);
-            p.putClientProperty("themed_base", true);
-            p.setPreferredSize(new Dimension(40, 40));
-            pills.add(p);
-        }
-
-        bar.add(pills, BorderLayout.CENTER);
-        return bar;
     }
 
     /* ========================= ALWAYS-WHITE PILL WRAPPER ========================= */

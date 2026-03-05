@@ -79,10 +79,12 @@ public class AppController {
         AddActiveTaskView addActiveTaskView = new AddActiveTaskView(this, activeTasksModel);
         DeleteActiveTasksView deleteActiveTasksView = new DeleteActiveTasksView(this, activeTasksModel);
         MarkCompletedTasksView markCompletedTasksView = new MarkCompletedTasksView(this, activeTasksModel, completedTasksModel);
+        EditActiveTaskView editActiveTaskView = new EditActiveTaskView(this, activeTasksModel);
 
         RecurringTasksView recurringTasksView = new RecurringTasksView(this, recurringTasksModel);
         AddRecurringView addRecurringView = new AddRecurringView(this, recurringTasksModel);
         DeleteRecurringView deleteRecurringView = new DeleteRecurringView(this, recurringTasksModel);
+        EditRecurringView editRecurringView = new EditRecurringView(this, recurringTasksModel);
 
         CompletedTasksView completedTasksView = new CompletedTasksView(this, completedTasksModel);
         DeleteCompletedView deleteCompletedView = new DeleteCompletedView(this, completedTasksModel);
@@ -99,10 +101,12 @@ public class AppController {
         registerView("ADD_ACTIVE", addActiveTaskView);
         registerView("DELETE_ACTIVE", deleteActiveTasksView);
         registerView("MARK_COMPLETED", markCompletedTasksView);
+        registerView("EDIT_ACTIVE", editActiveTaskView);
 
         registerView("RECURRING", recurringTasksView);
         registerView("ADD_RECURRING", addRecurringView);
         registerView("DELETE_RECURRING", deleteRecurringView);
+        registerView("EDIT_RECURRING", editRecurringView);
 
         registerView("COMPLETED", completedTasksView);
         registerView("DELETE_COMPLETED", deleteCompletedView);

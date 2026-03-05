@@ -32,6 +32,35 @@ public class PlanSyncActiveTasksModel {
         return new ArrayList<>(activeTasks);
     }
 
+
+/**
+ * Returns the task by its 1-based ID as displayed in the UI.
+ * @param id1Based 1..N
+ * @return Task or null if out of range
+ */
+public synchronized Task getTaskById(int id1Based) {
+    load();
+    int idx = id1Based - 1;
+    if (idx < 0 || idx >= activeTasks.size()) return null;
+    return activeTasks.get(idx);
+}
+
+public synchronized void updateTaskById(int id1Based, String name, String description, String deadlineDDMMYYYY)
+        throws DateTimeParseException {
+    LocalDate deadline = LocalDate.parse(deadlineDDMMYYYY, DATE_FMT);
+    updateTaskById(id1Based, name, description, deadline);
+}
+
+public synchronized void updateTaskById(int id1Based, String name, String description, LocalDate deadline) {
+    load();
+    int idx = id1Based - 1;
+    if (idx < 0 || idx >= activeTasks.size()) {
+        throw new IllegalArgumentException("Task ID out of range: " + id1Based);
+    }
+    activeTasks.set(idx, new Task(clean(name), clean(description), deadline));
+    save();
+}
+
     public synchronized void addTask(String name, String description, String deadlineDDMMYYYY)
             throws DateTimeParseException {
         LocalDate deadline = LocalDate.parse(deadlineDDMMYYYY, DATE_FMT);

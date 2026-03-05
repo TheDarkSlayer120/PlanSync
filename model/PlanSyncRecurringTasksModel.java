@@ -38,6 +38,29 @@ public class PlanSyncRecurringTasksModel {
         return new ArrayList<>(tasks);
     }
 
+
+/**
+ * Returns the recurring task by its 1-based ID as displayed in the UI.
+ * @param id1Based 1..N
+ * @return RecurringTask or null if out of range
+ */
+public synchronized RecurringTask getTaskById(int id1Based) {
+    load();
+    int idx = id1Based - 1;
+    if (idx < 0 || idx >= tasks.size()) return null;
+    return tasks.get(idx);
+}
+
+public synchronized void updateTaskById(int id1Based, String name, String description, String timeDate, String frequency) {
+    load();
+    int idx = id1Based - 1;
+    if (idx < 0 || idx >= tasks.size()) {
+        throw new IllegalArgumentException("Task ID out of range: " + id1Based);
+    }
+    tasks.set(idx, new RecurringTask(clean(name), clean(description), clean(timeDate), clean(frequency).toUpperCase()));
+    save();
+}
+
     public synchronized void addTask(String name, String description, String timeDate, String frequency) {
         load();
         tasks.add(new RecurringTask(clean(name), clean(description), clean(timeDate), clean(frequency).toUpperCase()));
