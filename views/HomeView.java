@@ -19,13 +19,13 @@ public class HomeView extends JPanel implements RefreshableView {
     private final JLabel timeLabel;
     private final JLabel dateLabel;
 
-    // Active tasks area (match ActiveTasksView formatting, but hide its header lines on Home)
     private final JTextArea taskArea;
     private final JScrollPane taskScroll;
 
     private Timer liveClockTimer;
 
-    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
+    // CHANGED: now includes seconds
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.ENGLISH);
 
     public HomeView(AppController controller) {
@@ -34,21 +34,18 @@ public class HomeView extends JPanel implements RefreshableView {
         setLayout(new BorderLayout());
         setOpaque(true);
 
-        // ===== TOP TITLE =====
         JLabel title = new JLabel("P L A N S Y N C", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 30));
         title.putClientProperty("on_base", true);
         title.setBorder(BorderFactory.createEmptyBorder(18, 0, 10, 0));
         add(title, BorderLayout.NORTH);
 
-        // ===== MAIN CONTENT (VERTICAL) =====
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setOpaque(false);
         content.setBorder(BorderFactory.createEmptyBorder(10, 70, 18, 70));
         add(content, BorderLayout.CENTER);
 
-        // ===== WELCOME PANEL (SHORTER HEIGHT) =====
         RoundedPanel welcomePanel = new RoundedPanel(35);
         welcomePanel.putClientProperty("themed", true);
         welcomePanel.setLayout(new BorderLayout());
@@ -62,7 +59,6 @@ public class HomeView extends JPanel implements RefreshableView {
         content.add(welcomePanel);
         content.add(Box.createVerticalStrut(16));
 
-        // ===== TODAY + TOOLS ROW =====
         JPanel row = new JPanel(new GridBagLayout());
         row.setOpaque(false);
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 170));
@@ -72,7 +68,7 @@ public class HomeView extends JPanel implements RefreshableView {
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
 
-        // --- TODAY PANEL (LEFT) ---
+        // TODAY panel
         RoundedPanel todayPanel = new RoundedPanel(30);
         todayPanel.putClientProperty("themed", true);
         todayPanel.setLayout(new BorderLayout());
@@ -87,9 +83,10 @@ public class HomeView extends JPanel implements RefreshableView {
         todayCenter.setOpaque(false);
         todayCenter.setLayout(new BoxLayout(todayCenter, BoxLayout.Y_AXIS));
 
-        timeLabel = new JLabel("00:00", SwingConstants.CENTER);
+        timeLabel = new JLabel("00:00:00", SwingConstants.CENTER);
         timeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        timeLabel.setFont(new Font("Monospaced", Font.BOLD, 52));
+        // slight reduction so HH:mm:ss fits cleanly
+        timeLabel.setFont(new Font("Monospaced", Font.BOLD, 44));
 
         dateLabel = new JLabel("Friday, 1 January 2026", SwingConstants.CENTER);
         dateLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -108,7 +105,7 @@ public class HomeView extends JPanel implements RefreshableView {
         gbc.insets = new Insets(0, 0, 0, 14);
         row.add(todayPanel, gbc);
 
-        // --- TOOLS PANEL (RIGHT) ---
+        // TOOLS panel
         RoundedPanel toolsPanel = new RoundedPanel(30);
         toolsPanel.putClientProperty("themed", true);
         toolsPanel.setLayout(new BorderLayout());
@@ -128,10 +125,7 @@ public class HomeView extends JPanel implements RefreshableView {
         toolsGrid.add(toolButton("🗓", "Calendar", () -> controller.showView("CALENDAR")));
 
         toolsGrid.add(toolButton("+", "Add Active Task", () -> controller.showView("ADD_ACTIVE")));
-
-        // CHANGED: thicker check button (back to the previous style)
         toolsGrid.add(toolButton("✅", "Mark Task as Complete", () -> controller.showView("MARK_COMPLETED")));
-
         toolsGrid.add(toolButton("🔁", "Add Recurring Task", () -> controller.showView("ADD_RECURRING")));
         toolsGrid.add(toolButton("⚙", "Settings", () -> controller.showView("SETTINGS")));
 
@@ -145,7 +139,7 @@ public class HomeView extends JPanel implements RefreshableView {
         content.add(row);
         content.add(Box.createVerticalStrut(16));
 
-        // ===== ACTIVE TASKS PANEL =====
+        // ACTIVE TASKS panel
         RoundedPanel tasksPanel = new RoundedPanel(30);
         tasksPanel.putClientProperty("themed", true);
         tasksPanel.setLayout(new BorderLayout());
@@ -169,7 +163,6 @@ public class HomeView extends JPanel implements RefreshableView {
         taskScroll.setOpaque(false);
         taskScroll.getViewport().setOpaque(false);
 
-        // Auto-adjust formatting width on resize
         taskScroll.getViewport().addComponentListener(new ComponentAdapter() {
             @Override public void componentResized(ComponentEvent e) {
                 updateTasksText();
@@ -179,7 +172,6 @@ public class HomeView extends JPanel implements RefreshableView {
         tasksPanel.add(taskScroll, BorderLayout.CENTER);
         content.add(tasksPanel);
 
-        // Start clock updates
         startLiveClock();
         refresh();
     }
@@ -229,12 +221,6 @@ public class HomeView extends JPanel implements RefreshableView {
         return Math.max(40, chars);
     }
 
-    /**
-     * Removes the ActiveTasksView header block from the formatted display:
-     * <<ACTIVE TASKS:>> (TODAY: ..)
-     * ======...
-     * ======...
-     */
     private String stripActiveTasksHeader(String formatted) {
         if (formatted == null || formatted.isBlank()) return "";
 
@@ -258,7 +244,6 @@ public class HomeView extends JPanel implements RefreshableView {
                 }
 
                 if (trimmed.isEmpty()) continue;
-
                 skipping = false;
             }
 
@@ -294,6 +279,7 @@ public class HomeView extends JPanel implements RefreshableView {
     public void addNotify() {
         super.addNotify();
         startLiveClock();
+        updateClock();
     }
 
     @Override

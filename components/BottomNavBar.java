@@ -20,21 +20,21 @@ public class BottomNavBar extends JPanel {
         this.controller = controller;
 
         setLayout(new GridLayout(1, 9, 8, 0));
-        setPreferredSize(new Dimension(0, 60));
+        setPreferredSize(new Dimension(0, 70));
         setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
 
         putClientProperty("themed", true);
 
         String[] labels = {
-                "Home",
-                "Timer",
-                "Stopwatch",
-                "Time Calculator",
-                "Calendar",
-                "Active",
-                "Recurring",
-                "Completed",
-                "Settings"
+                "HOME",
+                "TIMER",
+                "STOPWATCH",
+                "<html><div style='text-align:center;'>TIME<br>CALCULATOR</div></html>",
+                "CALENDAR",
+                "ACTIVE",
+                "RECURRING",
+                "COMPLETED",
+                "SETTINGS"
         };
 
         String[] actions = {
@@ -63,14 +63,14 @@ public class BottomNavBar extends JPanel {
         btn.setFocusPainted(false);
         btn.setBackground(defaultColor);
         btn.setForeground(Color.BLACK);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 11));
+        btn.setFont(new Font("SansSerif", Font.BOLD, 14));
         btn.setRolloverEnabled(false);
         btn.setOpaque(true);
         btn.setContentAreaFilled(true);
         btn.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
         btn.putClientProperty("active", false);
-        btn.putClientProperty("nav_button", true); // ✅ prevents AppController from enlarging nav font
+        btn.putClientProperty("nav_button", true);
 
         btn.addActionListener(e -> controller.showView(action));
 

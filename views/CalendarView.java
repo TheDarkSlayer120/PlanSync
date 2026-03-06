@@ -16,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -32,8 +33,15 @@ public class CalendarView extends JPanel implements RefreshableView {
     private final JButton nextBtn;
     private final JButton[] dayButtons = new JButton[42];
 
-    // Day-of-week header labels (so we can force their colour)
+    // Day-of-week header labels (so we can force their colour if desired)
     private final JLabel[] dowLabels = new JLabel[7];
+
+    // Live date + time: "Friday, 6 March 2027   |   HH:MM:SS"
+    private final JLabel liveDateTimeLabel;
+    private Timer liveClockTimer;
+
+    private static final DateTimeFormatter LIVE_DT_FMT =
+            DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy   |   HH:mm:ss", Locale.ENGLISH);
 
     // Colors (computed from theme on refresh)
     private Color inMonthBg;
@@ -49,6 +57,9 @@ public class CalendarView extends JPanel implements RefreshableView {
     private Color navBgHover;
     private Color navBorder;
 
+    // Live date/time color (depends on dark mode)
+    private Color liveDateTimeFg;
+
     private static final DateTimeFormatter POPUP_TITLE_FMT =
             DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy");
 
@@ -60,15 +71,28 @@ public class CalendarView extends JPanel implements RefreshableView {
         putClientProperty("themed_base", true);
 
         // ===== Top title bar =====
-        JPanel top = new JPanel(new BorderLayout());
+        JPanel top = new JPanel();
+        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
         top.putClientProperty("themed_base", true);
         top.setBorder(BorderFactory.createEmptyBorder(18, 22, 10, 22));
 
         JLabel title = new JLabel("C A L E N D A R", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 28));
         title.putClientProperty("on_base", true);
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        top.add(title, BorderLayout.CENTER);
+        // NEW: live date + time line
+        liveDateTimeLabel = new JLabel("Friday, 1 January 2026   |   00:00:00", SwingConstants.CENTER);
+        liveDateTimeLabel.setFont(new Font("SansSerif", Font.BOLD, 24));     // date readable
+        // keep monospaced feel for time by using a font that still looks good (optional)
+        // If you'd rather fully monospaced, set to "Monospaced" instead.
+        liveDateTimeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        liveDateTimeLabel.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
+
+        top.add(title);
+        top.add(Box.createVerticalStrut(6));
+        top.add(liveDateTimeLabel);
+
         add(top, BorderLayout.NORTH);
 
         // ===== Center area that stretches =====
@@ -93,7 +117,7 @@ public class CalendarView extends JPanel implements RefreshableView {
 
         headerLabel = new JLabel("", SwingConstants.CENTER);
         headerLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
-        headerLabel.setForeground(Color.BLACK); // ✅ ALWAYS BLACK
+        headerLabel.setForeground(Color.BLACK); // keep month header black like your design
 
         monthRow.add(prevBtn, BorderLayout.WEST);
         monthRow.add(headerLabel, BorderLayout.CENTER);
@@ -113,7 +137,7 @@ public class CalendarView extends JPanel implements RefreshableView {
         for (DayOfWeek d : DayOfWeek.values()) {
             JLabel l = new JLabel(d.getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase(), SwingConstants.CENTER);
             l.setFont(new Font("SansSerif", Font.BOLD, 12));
-            l.setForeground(Color.BLACK); // ✅ ALWAYS BLACK
+            l.setForeground(Color.BLACK); // keep DOW header black like your design
             dowLabels[idx++] = l;
             dow.add(l);
         }
@@ -143,18 +167,49 @@ public class CalendarView extends JPanel implements RefreshableView {
             refresh();
         });
 
+        startLiveClock();
         refresh();
+    }
+
+    // ===== Live clock helpers =====
+    private void startLiveClock() {
+        if (liveClockTimer != null) return;
+        liveClockTimer = new Timer(1000, e -> updateLiveDateTime());
+        liveClockTimer.setInitialDelay(0);
+        liveClockTimer.start();
+    }
+
+    private void stopLiveClock() {
+        if (liveClockTimer != null) {
+            liveClockTimer.stop();
+            liveClockTimer = null;
+        }
+    }
+
+    private void updateLiveDateTime() {
+        liveDateTimeLabel.setText(LocalDateTime.now().format(LIVE_DT_FMT));
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        startLiveClock();
+        updateLiveDateTime();
+    }
+
+    @Override
+    public void removeNotify() {
+        stopLiveClock();
+        super.removeNotify();
     }
 
     @Override
     public void refresh() {
         computeColors();
 
-        // ✅ enforce readable header colours regardless of theme
-        headerLabel.setForeground(Color.BLACK);
-        for (JLabel l : dowLabels) {
-            if (l != null) l.setForeground(Color.BLACK);
-        }
+        // Dark-mode friendly live date/time
+        liveDateTimeLabel.setForeground(liveDateTimeFg);
+        updateLiveDateTime();
 
         renderMonth();
         applyNavButtonStyle(prevBtn);
@@ -230,7 +285,6 @@ public class CalendarView extends JPanel implements RefreshableView {
         b.setFocusPainted(false);
         b.setOpaque(true);
         b.setContentAreaFilled(true);
-        b.setPreferredSize(null);
         b.setMinimumSize(new Dimension(40, 40));
         b.setFont(new Font("SansSerif", Font.BOLD, 20));
         b.setBorderPainted(true);
@@ -256,7 +310,6 @@ public class CalendarView extends JPanel implements RefreshableView {
         b.setContentAreaFilled(true);
         b.setBorder(BorderFactory.createEmptyBorder(12, 18, 12, 18));
         b.setFont(new Font("SansSerif", Font.BOLD, 14));
-        b.setPreferredSize(null);
         b.putClientProperty("ignore_theme", true);
         return b;
     }
@@ -279,7 +332,6 @@ public class CalendarView extends JPanel implements RefreshableView {
     private class NavHoverListener extends MouseAdapter {
         private final JButton btn;
         NavHoverListener(JButton btn) { this.btn = btn; }
-
         @Override public void mouseEntered(MouseEvent e) { btn.setBackground(navBgHover); }
         @Override public void mouseExited(MouseEvent e) { btn.setBackground(navBg); }
     }
@@ -330,8 +382,8 @@ public class CalendarView extends JPanel implements RefreshableView {
         navBgHover = darken(navBg, 0.12);
         navBorder = new Color(0, 0, 0, darkMode ? 160 : 140);
 
-        // ✅ Do NOT set headerLabel colour based on mode anymore.
-        // We force it to black in refresh().
+        // Dark-mode friendly live date/time: white in dark mode, black in light mode
+        liveDateTimeFg = darkMode ? Color.WHITE : Color.BLACK;
     }
 
     private static Color blend(Color a, Color b, double t) {
