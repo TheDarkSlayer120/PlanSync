@@ -2,13 +2,19 @@ package views;
 
 import controller.AppController;
 import model.PlanSyncActiveTasksModel;
+import model.PlanSyncRecurringTasksModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 public class HomeView extends JPanel implements RefreshableView {
@@ -19,14 +25,22 @@ public class HomeView extends JPanel implements RefreshableView {
     private final JLabel timeLabel;
     private final JLabel dateLabel;
 
-    private final JTextArea taskArea;
-    private final JScrollPane taskScroll;
+    private final JToggleButton activeAscBtn;
+    private final JToggleButton activeDescBtn;
+    private final JTextArea activeArea;
+    private final JScrollPane activeScroll;
+
+    private final JComboBox<String> recurringFilter;
+    private final JTextArea recurringArea;
+    private final JScrollPane recurringScroll;
+
+    private final JScrollPane pageScroll;
 
     private Timer liveClockTimer;
 
-    // CHANGED: now includes seconds
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter ACTIVE_DATE_FMT = PlanSyncActiveTasksModel.getDateFormatter();
 
     public HomeView(AppController controller) {
         this.controller = controller;
@@ -43,14 +57,24 @@ public class HomeView extends JPanel implements RefreshableView {
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setOpaque(false);
-        content.setBorder(BorderFactory.createEmptyBorder(10, 70, 18, 70));
-        add(content, BorderLayout.CENTER);
+        content.setBorder(BorderFactory.createEmptyBorder(10, 40, 18, 40));
+
+        pageScroll = new JScrollPane(content);
+        pageScroll.setBorder(BorderFactory.createEmptyBorder());
+        pageScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        pageScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        pageScroll.setOpaque(false);
+        pageScroll.getViewport().setOpaque(false);
+        pageScroll.getVerticalScrollBar().setUnitIncrement(16);
+
+        add(pageScroll, BorderLayout.CENTER);
 
         RoundedPanel welcomePanel = new RoundedPanel(35);
         welcomePanel.putClientProperty("themed", true);
         welcomePanel.setLayout(new BorderLayout());
         welcomePanel.setBorder(BorderFactory.createEmptyBorder(14, 22, 14, 22));
         welcomePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
+        welcomePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         welcomeLabel = new JLabel("WELCOME to PlanSync, USERNAME!", SwingConstants.CENTER);
         welcomeLabel.setFont(new Font("SansSerif", Font.BOLD, 30));
@@ -62,13 +86,13 @@ public class HomeView extends JPanel implements RefreshableView {
         JPanel row = new JPanel(new GridBagLayout());
         row.setOpaque(false);
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 170));
+        row.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy = 0;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
 
-        // TODAY panel
         RoundedPanel todayPanel = new RoundedPanel(30);
         todayPanel.putClientProperty("themed", true);
         todayPanel.setLayout(new BorderLayout());
@@ -85,7 +109,6 @@ public class HomeView extends JPanel implements RefreshableView {
 
         timeLabel = new JLabel("00:00:00", SwingConstants.CENTER);
         timeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        // slight reduction so HH:mm:ss fits cleanly
         timeLabel.setFont(new Font("Monospaced", Font.BOLD, 44));
 
         dateLabel = new JLabel("Friday, 1 January 2026", SwingConstants.CENTER);
@@ -101,11 +124,10 @@ public class HomeView extends JPanel implements RefreshableView {
         todayPanel.add(todayCenter, BorderLayout.CENTER);
 
         gbc.gridx = 0;
-        gbc.weightx = 0.55;
+        gbc.weightx = 0.50;
         gbc.insets = new Insets(0, 0, 0, 14);
         row.add(todayPanel, gbc);
 
-        // TOOLS panel
         RoundedPanel toolsPanel = new RoundedPanel(30);
         toolsPanel.putClientProperty("themed", true);
         toolsPanel.setLayout(new BorderLayout());
@@ -132,48 +154,131 @@ public class HomeView extends JPanel implements RefreshableView {
         toolsPanel.add(toolsGrid, BorderLayout.CENTER);
 
         gbc.gridx = 1;
-        gbc.weightx = 0.45;
+        gbc.weightx = 0.50;
         gbc.insets = new Insets(0, 0, 0, 0);
         row.add(toolsPanel, gbc);
 
         content.add(row);
         content.add(Box.createVerticalStrut(16));
 
-        // ACTIVE TASKS panel
-        RoundedPanel tasksPanel = new RoundedPanel(30);
-        tasksPanel.putClientProperty("themed", true);
-        tasksPanel.setLayout(new BorderLayout());
-        tasksPanel.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
-        tasksPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 330));
+        RoundedPanel activePanel = new RoundedPanel(30);
+        activePanel.putClientProperty("themed", true);
+        activePanel.setLayout(new BorderLayout());
+        activePanel.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
+        activePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 210));
+        activePanel.setPreferredSize(new Dimension(1200, 210));
+        activePanel.setMinimumSize(new Dimension(0, 210));
+        activePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel tasksTag = new JLabel("ACTIVE TASKS:");
-        tasksTag.setFont(new Font("SansSerif", Font.BOLD, 12));
-        tasksTag.setBorder(BorderFactory.createEmptyBorder(0, 6, 6, 0));
-        tasksPanel.add(tasksTag, BorderLayout.NORTH);
+        JPanel activeHeader = new JPanel(new BorderLayout());
+        activeHeader.setOpaque(false);
 
-        taskArea = new JTextArea();
-        taskArea.setEditable(false);
-        taskArea.setLineWrap(true);
-        taskArea.setWrapStyleWord(false);
-        taskArea.setFont(new Font("Monospaced", Font.BOLD, 14));
-        taskArea.setOpaque(false);
+        JLabel activeTag = new JLabel("ACTIVE TASKS:");
+        activeTag.setFont(new Font("SansSerif", Font.BOLD, 12));
+        activeTag.setBorder(BorderFactory.createEmptyBorder(0, 6, 6, 0));
+        activeHeader.add(activeTag, BorderLayout.WEST);
 
-        taskScroll = new JScrollPane(taskArea);
-        taskScroll.setBorder(BorderFactory.createEmptyBorder());
-        taskScroll.setOpaque(false);
-        taskScroll.getViewport().setOpaque(false);
+        JPanel orderWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        orderWrap.setOpaque(false);
 
-        taskScroll.getViewport().addComponentListener(new ComponentAdapter() {
-            @Override public void componentResized(ComponentEvent e) {
-                updateTasksText();
+        JLabel orderLabel = new JLabel("ORDER:");
+        orderLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        orderWrap.add(orderLabel);
+
+        activeAscBtn = smallArrowToggle("▲", "Ascending");
+        activeDescBtn = smallArrowToggle("▼", "Descending");
+
+        ButtonGroup orderGroup = new ButtonGroup();
+        orderGroup.add(activeAscBtn);
+        orderGroup.add(activeDescBtn);
+        activeAscBtn.setSelected(true);
+
+        activeAscBtn.addActionListener(e -> updateActiveText());
+        activeDescBtn.addActionListener(e -> updateActiveText());
+
+        orderWrap.add(activeAscBtn);
+        orderWrap.add(activeDescBtn);
+
+        activeHeader.add(orderWrap, BorderLayout.EAST);
+        activePanel.add(activeHeader, BorderLayout.NORTH);
+
+        activeArea = new JTextArea();
+        activeArea.setEditable(false);
+        activeArea.setLineWrap(true);
+        activeArea.setWrapStyleWord(false);
+        activeArea.setFont(new Font("Monospaced", Font.BOLD, 14));
+        activeArea.setOpaque(false);
+
+        activeScroll = new JScrollPane(activeArea);
+        activeScroll.setBorder(BorderFactory.createEmptyBorder());
+        activeScroll.setOpaque(false);
+        activeScroll.getViewport().setOpaque(false);
+
+        activeScroll.getViewport().addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                updateActiveText();
             }
         });
 
-        tasksPanel.add(taskScroll, BorderLayout.CENTER);
-        content.add(tasksPanel);
+        activePanel.add(activeScroll, BorderLayout.CENTER);
+        content.add(activePanel);
+        content.add(Box.createVerticalStrut(16));
 
-        startLiveClock();
-        refresh();
+        RoundedPanel recurringPanel = new RoundedPanel(30);
+        recurringPanel.putClientProperty("themed", true);
+        recurringPanel.setLayout(new BorderLayout());
+        recurringPanel.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
+        recurringPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 210));
+        recurringPanel.setPreferredSize(new Dimension(1200, 210));
+        recurringPanel.setMinimumSize(new Dimension(0, 210));
+        recurringPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel recurringHeader = new JPanel(new BorderLayout());
+        recurringHeader.setOpaque(false);
+
+        JLabel recurringTag = new JLabel("RECURRING TASKS:");
+        recurringTag.setFont(new Font("SansSerif", Font.BOLD, 12));
+        recurringTag.setBorder(BorderFactory.createEmptyBorder(0, 6, 6, 0));
+        recurringHeader.add(recurringTag, BorderLayout.WEST);
+
+        JPanel filterWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        filterWrap.setOpaque(false);
+
+        JLabel filterLabel = new JLabel("SHOW:");
+        filterLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        filterWrap.add(filterLabel);
+
+        recurringFilter = new JComboBox<>(new String[]{"DAILY", "WEEKLY", "MONTHLY", "YEARLY"});
+        recurringFilter.setFont(new Font("SansSerif", Font.BOLD, 12));
+        recurringFilter.setFocusable(false);
+        recurringFilter.addActionListener(e -> updateRecurringText());
+        filterWrap.add(recurringFilter);
+
+        recurringHeader.add(filterWrap, BorderLayout.EAST);
+        recurringPanel.add(recurringHeader, BorderLayout.NORTH);
+
+        recurringArea = new JTextArea();
+        recurringArea.setEditable(false);
+        recurringArea.setLineWrap(true);
+        recurringArea.setWrapStyleWord(false);
+        recurringArea.setFont(new Font("Monospaced", Font.BOLD, 14));
+        recurringArea.setOpaque(false);
+
+        recurringScroll = new JScrollPane(recurringArea);
+        recurringScroll.setBorder(BorderFactory.createEmptyBorder());
+        recurringScroll.setOpaque(false);
+        recurringScroll.getViewport().setOpaque(false);
+
+        recurringScroll.getViewport().addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                updateRecurringText();
+            }
+        });
+
+        recurringPanel.add(recurringScroll, BorderLayout.CENTER);
+        content.add(recurringPanel);
     }
 
     private JButton toolButton(String symbol, String tooltip, Runnable action) {
@@ -184,6 +289,17 @@ public class HomeView extends JPanel implements RefreshableView {
         b.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         b.setPreferredSize(new Dimension(74, 64));
         b.addActionListener(e -> action.run());
+        return b;
+    }
+
+    private JToggleButton smallArrowToggle(String symbol, String tooltip) {
+        JToggleButton b = new JToggleButton(symbol);
+        b.setToolTipText(tooltip);
+        b.setFocusPainted(false);
+        b.setFont(new Font("SansSerif", Font.BOLD, 14));
+        b.setPreferredSize(new Dimension(34, 28));
+        b.setMargin(new Insets(0, 0, 0, 0));
+        b.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
         return b;
     }
 
@@ -207,63 +323,114 @@ public class HomeView extends JPanel implements RefreshableView {
         dateLabel.setText(now.toLocalDate().format(DATE_FMT));
     }
 
-    private int getWidthChars() {
-        int px = taskScroll.getViewport().getExtentSize().width;
-        Insets in = taskArea.getInsets();
-        px -= (in.left + in.right);
-        if (px <= 0) return 93;
-
-        FontMetrics fm = taskArea.getFontMetrics(taskArea.getFont());
-        int charW = fm.charWidth('=');
-        if (charW <= 0) charW = Math.max(1, fm.charWidth('W'));
-
-        int chars = px / charW;
-        return Math.max(40, chars);
-    }
-
-    private String stripActiveTasksHeader(String formatted) {
-        if (formatted == null || formatted.isBlank()) return "";
-
-        String[] lines = formatted.split("\\R", -1);
-        StringBuilder out = new StringBuilder();
-
-        boolean skipping = true;
-        for (String line : lines) {
-            String trimmed = line.trim();
-
-            if (skipping) {
-                if (trimmed.contains("<<ACTIVE TASKS:>>")) continue;
-
-                if (!trimmed.isEmpty()) {
-                    boolean allEq = true;
-                    for (int i = 0; i < trimmed.length(); i++) {
-                        char c = trimmed.charAt(i);
-                        if (c != '=') { allEq = false; break; }
-                    }
-                    if (allEq) continue;
-                }
-
-                if (trimmed.isEmpty()) continue;
-                skipping = false;
-            }
-
-            out.append(line).append('\n');
-        }
-
-        return out.toString().stripTrailing() + "\n";
-    }
-
-    private void updateTasksText() {
+    private void updateActiveText() {
         PlanSyncActiveTasksModel model = controller.getActiveTasksModel();
         if (model == null) {
-            taskArea.setText("No active tasks found.\n");
-            taskArea.setCaretPosition(0);
+            activeArea.setText("No active tasks found.\n");
+            activeArea.setCaretPosition(0);
             return;
         }
 
-        String formatted = model.formatForDisplay(getWidthChars());
-        taskArea.setText(stripActiveTasksHeader(formatted));
-        taskArea.setCaretPosition(0);
+        List<PlanSyncActiveTasksModel.Task> tasks = model.getTasks();
+        LocalDate today = LocalDate.now();
+
+        List<PlanSyncActiveTasksModel.Task> upcoming = new ArrayList<>();
+        List<PlanSyncActiveTasksModel.Task> overdue = new ArrayList<>();
+
+        for (PlanSyncActiveTasksModel.Task t : tasks) {
+            if (t == null || t.deadline == null) continue;
+            if (!t.deadline.isBefore(today)) {
+                upcoming.add(t);
+            } else {
+                overdue.add(t);
+            }
+        }
+
+        Comparator<PlanSyncActiveTasksModel.Task> byDate = Comparator.comparing(t -> t.deadline);
+        boolean desc = activeDescBtn.isSelected();
+
+        upcoming.sort(desc ? byDate.reversed() : byDate);
+        overdue.sort(desc ? byDate.reversed() : byDate);
+
+        StringBuilder sb = new StringBuilder();
+        int id = 1;
+
+        for (PlanSyncActiveTasksModel.Task t : upcoming) {
+            sb.append(formatActiveRow(id++, t, today)).append("\n\n");
+        }
+        for (PlanSyncActiveTasksModel.Task t : overdue) {
+            sb.append(formatActiveRow(id++, t, today)).append("\n\n");
+        }
+
+        if (sb.length() == 0) {
+            sb.append("No active tasks found.\n");
+        }
+
+        activeArea.setText(sb.toString());
+        activeArea.setCaretPosition(0);
+    }
+
+    private String formatActiveRow(int id, PlanSyncActiveTasksModel.Task t, LocalDate today) {
+        long days = ChronoUnit.DAYS.between(today, t.deadline);
+        String status = (days == 0)
+                ? "TODAY"
+                : (days > 0 ? days + " DAYS REMAINING" : Math.abs(days) + " DAYS OVERDUE");
+
+        return "[" + id + "] "
+                + safe(t.name)
+                + " -> "
+                + safe(t.description)
+                + " -> {"
+                + t.deadline.format(ACTIVE_DATE_FMT)
+                + "} -> ["
+                + status
+                + "]";
+    }
+
+    private void updateRecurringText() {
+        PlanSyncRecurringTasksModel model = controller.getRecurringTasksModel();
+        if (model == null) {
+            recurringArea.setText("No recurring tasks found.\n");
+            recurringArea.setCaretPosition(0);
+            return;
+        }
+
+        String selected = (String) recurringFilter.getSelectedItem();
+        if (selected == null) selected = "DAILY";
+
+        List<PlanSyncRecurringTasksModel.RecurringTask> tasks = model.getTasks();
+        StringBuilder sb = new StringBuilder();
+        int id = 1;
+
+        for (PlanSyncRecurringTasksModel.RecurringTask t : tasks) {
+            if (t == null) continue;
+
+            String freq = t.frequency == null ? "" : t.frequency.trim().toUpperCase();
+            if (!freq.equals(selected)) continue;
+
+            sb.append("[")
+                    .append(id++)
+                    .append("] ")
+                    .append(safe(t.name))
+                    .append(" -> ")
+                    .append(safe(t.description))
+                    .append(" -> {")
+                    .append(safe(t.timeDate))
+                    .append("} -> [")
+                    .append(freq)
+                    .append("]\n\n");
+        }
+
+        if (sb.length() == 0) {
+            sb.append("No recurring tasks found for ").append(selected).append(".\n");
+        }
+
+        recurringArea.setText(sb.toString());
+        recurringArea.setCaretPosition(0);
+    }
+
+    private String safe(String s) {
+        return s == null ? "" : s;
     }
 
     @Override
@@ -272,7 +439,8 @@ public class HomeView extends JPanel implements RefreshableView {
         welcomeLabel.setText("WELCOME to PlanSync, " + name + "!");
 
         updateClock();
-        updateTasksText();
+        updateActiveText();
+        updateRecurringText();
     }
 
     @Override

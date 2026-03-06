@@ -143,6 +143,10 @@ public class AppController {
         return activeTasksModel;
     }
 
+    public PlanSyncRecurringTasksModel getRecurringTasksModel() {
+    return recurringTasksModel;
+    }
+
     public PlanSyncCalendarModel getCalendarModel() {
         return calendarModel;
     }
