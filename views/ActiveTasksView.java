@@ -44,17 +44,8 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         JPanel header = new JPanel(new BorderLayout());
         header.setOpaque(false);
 
-        JLabel listTag = new JLabel("ACTIVE TASKS:");
-        listTag.setFont(new Font("SansSerif", Font.BOLD, 12));
-        listTag.setBorder(BorderFactory.createEmptyBorder(0, 6, 10, 0));
-        header.add(listTag, BorderLayout.WEST);
-
         JPanel orderWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         orderWrap.setOpaque(false);
-
-        JLabel orderLabel = new JLabel("ORDER:");
-        orderLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-        orderWrap.add(orderLabel);
 
         ascBtn = smallArrowToggle("▲", "Ascending");
         descBtn = smallArrowToggle("▼", "Descending");
@@ -62,7 +53,6 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         ButtonGroup orderGroup = new ButtonGroup();
         orderGroup.add(ascBtn);
         orderGroup.add(descBtn);
-
         ascBtn.setSelected(true);
 
         ascBtn.addActionListener(e -> updateListText());
@@ -168,13 +158,30 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         }
 
         List<PlanSyncActiveTasksModel.Task> tasks = activeModel.getTasks();
+        int width = getWidthChars();
         LocalDate today = LocalDate.now();
+
+        String header = "<<ACTIVE TASKS:>> (TODAY: "
+                + today.format(PlanSyncActiveTasksModel.getDateFormatter()) + ")";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(centerLine(header, width)).append("\n")
+          .append(doubleLine(width)).append("\n\n");
+
+        if (tasks == null || tasks.isEmpty()) {
+            sb.append("No active tasks found.\n");
+            taskArea.setText(sb.toString());
+            taskArea.setCaretPosition(0);
+            return;
+        }
 
         List<PlanSyncActiveTasksModel.Task> upcoming = new ArrayList<>();
         List<PlanSyncActiveTasksModel.Task> overdue = new ArrayList<>();
 
         for (PlanSyncActiveTasksModel.Task t : tasks) {
-            if (t == null || t.deadline == null) continue;
+            if (t == null || t.deadline == null) {
+                continue;
+            }
 
             if (!t.deadline.isBefore(today)) {
                 upcoming.add(t);
@@ -184,23 +191,21 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         }
 
         Comparator<PlanSyncActiveTasksModel.Task> byDate = Comparator.comparing(t -> t.deadline);
-        boolean desc = descBtn.isSelected();
+        boolean descending = descBtn.isSelected();
 
-        upcoming.sort(desc ? byDate.reversed() : byDate);
-        overdue.sort(desc ? byDate.reversed() : byDate);
+        upcoming.sort(descending ? byDate.reversed() : byDate);
+        overdue.sort(descending ? byDate.reversed() : byDate);
 
-        StringBuilder sb = new StringBuilder();
         int id = 1;
-
-        for (PlanSyncActiveTasksModel.Task t : upcoming) {
-            sb.append(formatTaskRow(id++, t, today)).append("\n\n");
+        for (PlanSyncActiveTasksModel.Task task : upcoming) {
+            sb.append(formatTaskLine(id++, task, today)).append("\n\n");
         }
 
-        for (PlanSyncActiveTasksModel.Task t : overdue) {
-            sb.append(formatTaskRow(id++, t, today)).append("\n\n");
+        for (PlanSyncActiveTasksModel.Task task : overdue) {
+            sb.append(formatTaskLine(id++, task, today)).append("\n\n");
         }
 
-        if (sb.length() == 0) {
+        if (id == 1) {
             sb.append("No active tasks found.\n");
         }
 
@@ -208,18 +213,16 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         taskArea.setCaretPosition(0);
     }
 
-    private String formatTaskRow(int id, PlanSyncActiveTasksModel.Task t, LocalDate today) {
-        long days = ChronoUnit.DAYS.between(today, t.deadline);
-        String status = (days == 0)
-                ? "TODAY"
-                : (days > 0 ? days + " DAYS REMAINING" : Math.abs(days) + " DAYS OVERDUE");
+    private String formatTaskLine(int id, PlanSyncActiveTasksModel.Task task, LocalDate today) {
+        long days = ChronoUnit.DAYS.between(today, task.deadline);
+        String status = (days < 0)
+                ? Math.abs(days) + " DAYS OVERDUE"
+                : days + " DAYS REMAINING";
 
         return "[" + id + "] "
-                + safe(t.name)
-                + " -> "
-                + safe(t.description)
-                + " -> {"
-                + t.deadline.format(PlanSyncActiveTasksModel.getDateFormatter())
+                + safe(task.name) + " -> "
+                + safe(task.description) + " -> {"
+                + task.deadline.format(PlanSyncActiveTasksModel.getDateFormatter())
                 + "} -> ["
                 + status
                 + "]";
@@ -227,6 +230,23 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
 
     private String safe(String s) {
         return s == null ? "" : s;
+    }
+
+    private String centerLine(String line, int width) {
+        if (line == null) {
+            line = "";
+        }
+        if (line.length() >= width) {
+            return line;
+        }
+        int pad = (width - line.length()) / 2;
+        return " ".repeat(Math.max(0, pad)) + line;
+    }
+
+    private String doubleLine(int width) {
+        int w = Math.max(1, width);
+        String line = "=".repeat(w);
+        return line + "\n" + line;
     }
 
     @Override
