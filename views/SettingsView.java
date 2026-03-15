@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the SettingsView part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 import model.PlanSyncSettings;
 import model.Theme;
@@ -29,6 +46,7 @@ public class SettingsView extends JPanel {
         this.selectedTheme = settings.getSelectedTheme();
         this.selectedDarkMode = settings.isDarkMode();
 
+        // Section: Update the state used to layout.
         setLayout(new BorderLayout());
 
         // ================= TITLE =================
@@ -36,6 +54,7 @@ public class SettingsView extends JPanel {
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         title.putClientProperty("on_base", true);
+        // Section: Add the data or behavior needed to add.
         add(title, BorderLayout.NORTH);
 
         // ================= OUTER CENTER =================
@@ -43,6 +62,7 @@ public class SettingsView extends JPanel {
         outer.setLayout(new BoxLayout(outer, BoxLayout.Y_AXIS));
         outer.setOpaque(false);
         outer.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
+        // Section: Add the data or behavior needed to add.
         add(outer, BorderLayout.CENTER);
 
         // ================= ROUNDED CONTENT PANEL =================
@@ -132,6 +152,7 @@ public class SettingsView extends JPanel {
 
         content.add(save);
 
+        // Section: Refresh or recompute the state used to highlight.
         updateHighlight();
 
         save.addActionListener(e -> {
@@ -144,6 +165,7 @@ public class SettingsView extends JPanel {
     }
 
     // ================= THEME PREVIEW PANEL =================
+    // Section: Build and return the elements needed to theme panel.
     private JPanel createThemePanel(Theme theme) {
 
         JPanel panel = new JPanel(new GridLayout(1, 2));
@@ -163,8 +185,10 @@ public class SettingsView extends JPanel {
 
         panel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
+            // Section: Handle the logic for mouse clicked.
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 selectedTheme = theme;
+                // Section: Refresh or recompute the state used to highlight.
                 updateHighlight();
             }
         });
@@ -173,6 +197,7 @@ public class SettingsView extends JPanel {
     }
 
     // ================= MODE PANEL (FIXED LABEL BAR COLORS) =================
+    // Section: Build and return the elements needed to mode panel.
     private JPanel createModePanel(String modeName) {
 
         JPanel panel = new JPanel(new BorderLayout());
@@ -208,8 +233,10 @@ public class SettingsView extends JPanel {
 
         panel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
+            // Section: Handle the logic for mouse clicked.
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 selectedDarkMode = "DARK".equalsIgnoreCase(modeName);
+                // Section: Refresh or recompute the state used to highlight.
                 updateHighlight();
             }
         });
@@ -218,6 +245,7 @@ public class SettingsView extends JPanel {
     }
 
     // ================= HIGHLIGHT SELECTED =================
+    // Section: Refresh or recompute the state used to highlight.
     private void updateHighlight() {
 
         Color selectedBorder = selectedDarkMode ? Color.WHITE : Color.BLACK;
@@ -244,6 +272,7 @@ public class SettingsView extends JPanel {
             darkPanel.setBorder(BorderFactory.createLineBorder(active ? selectedBorder : unselectedBorder, active ? 4 : 2));
         }
 
+        // Section: Handle the logic for repaint.
         repaint();
     }
 }

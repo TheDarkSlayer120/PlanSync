@@ -1,4 +1,21 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncStopwatch part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -17,6 +34,7 @@ public class PlanSyncStopwatch {
     // store laps: lap number -> elapsed ms
     private static Map<Integer, Long> laps = new LinkedHashMap<>();
 
+    // Section: Handle the logic for run.
     public static Navigation run() {
 
         startTime = 0;
@@ -32,6 +50,7 @@ public class PlanSyncStopwatch {
             while (displayRunning) {
                 if (running) {
                     System.out.print("\r");
+                    // Section: Handle the logic for print time.
                     printTime(getElapsed());
                 }
                 try {
@@ -47,6 +66,7 @@ public class PlanSyncStopwatch {
 
             if (!running) {
                 // PRE‑START OR AFTER RESET: only Start, Go to Timer, Main Menu
+                // Section: Handle the logic for print pre start menu.
                 printPreStartMenu();
                 String choice = ConsoleUtils.scanner.nextLine();
 
@@ -85,6 +105,7 @@ public class PlanSyncStopwatch {
 
             } else {
                 // RUNNING OR PAUSED: Pause, Resume, Lap, Reset, Go Back, Show Laps
+                // Section: Handle the logic for print running menu.
                 printRunningMenu();
                 String choice = ConsoleUtils.scanner.nextLine();
 
@@ -109,6 +130,7 @@ public class PlanSyncStopwatch {
     /* ================= MENUS ================= */
 
     // Menu shown when stopwatch has NOT started (or after reset)
+    // Section: Handle the logic for print pre start menu.
     private static void printPreStartMenu() {
         System.out.println("\n\n--- STOPWATCH ---");
         System.out.println("Elapsed: 00:00.000");
@@ -125,8 +147,10 @@ public class PlanSyncStopwatch {
     }
 
     // Menu shown ONLY after stopwatch has started
+    // Section: Handle the logic for print running menu.
     private static void printRunningMenu() {
         System.out.println("\n\n--- STOPWATCH ---");
+        // Section: Handle the logic for print time.
         printTime(getElapsed());
         System.out.println();
 
@@ -141,6 +165,7 @@ public class PlanSyncStopwatch {
 
     /* ================= LOGIC ================= */
 
+    // Section: Handle the logic for start.
     private static void start() {
         if (running) {
             System.out.println("\nStopwatch already running.");
@@ -155,6 +180,7 @@ public class PlanSyncStopwatch {
         laps.clear();
     }
 
+    // Section: Handle the logic for pause.
     private static void pause() {
         if (!running || paused) {
             System.out.println("\nStopwatch is not running.");
@@ -165,6 +191,7 @@ public class PlanSyncStopwatch {
         paused = true;
     }
 
+    // Section: Handle the logic for resume.
     private static void resume() {
         if (!paused) {
             System.out.println("\nStopwatch is not paused.");
@@ -175,6 +202,7 @@ public class PlanSyncStopwatch {
         paused = false;
     }
 
+    // Section: Handle the logic for reset.
     private static void reset() {
         running = false;
         paused = false;
@@ -187,6 +215,7 @@ public class PlanSyncStopwatch {
         System.out.println("\n");
     }
 
+    // Section: Handle the logic for lap.
     private static void lap() {
         if (!running || paused) {
             System.out.println("\nStopwatch must be running to lap.");
@@ -197,12 +226,14 @@ public class PlanSyncStopwatch {
         laps.put(lapCount, elapsed);
 
         System.out.print("\nLap " + lapCount + ": ");
+        // Section: Handle the logic for print time.
         printTime(elapsed);
         System.out.println();
 
         lapCount++;
     }
 
+    // Section: Handle UI flow to laps.
     private static void showLaps() {
         if (laps.isEmpty()) {
             System.out.println("\nNo laps recorded yet.");
@@ -211,6 +242,7 @@ public class PlanSyncStopwatch {
         System.out.println("\nRecorded laps:");
         for (Map.Entry<Integer, Long> entry : laps.entrySet()) {
             System.out.print("Lap " + entry.getKey() + ": ");
+            // Section: Handle the logic for print time.
             printTime(entry.getValue());
             System.out.println();
         }
@@ -218,11 +250,13 @@ public class PlanSyncStopwatch {
 
     /* ================= TIME ================= */
 
+    // Section: Return the data used to elapsed.
     private static long getElapsed() {
         long now = paused ? pausedAt : System.currentTimeMillis();
         return now - startTime - pausedDuration;
     }
 
+    // Section: Handle the logic for print time.
     private static void printTime(long ms) {
         long min = ms / 60000;
         long sec = (ms % 60000) / 1000;

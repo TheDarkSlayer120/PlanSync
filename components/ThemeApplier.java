@@ -1,5 +1,22 @@
 package components;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the ThemeApplier part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import model.PlanSyncSettings;
 import model.Theme;
 
@@ -15,6 +32,7 @@ public final class ThemeApplier {
 
     private ThemeApplier() {}
 
+    // Section: Handle the logic for apply.
     public static void apply(Component root, PlanSyncSettings settings) {
         Theme theme = settings.getSelectedTheme();
         Color light = theme.getLightColor();
@@ -25,12 +43,15 @@ public final class ThemeApplier {
 
         if (root instanceof JFrame frame) {
             frame.getContentPane().setBackground(baseBg);
+        // Section: Handle the logic for if.
         } else if (root instanceof JDialog dialog) {
             dialog.getContentPane().setBackground(baseBg);
+        // Section: Handle the logic for if.
         } else if (root instanceof JPanel panel) {
             panel.setBackground(baseBg);
         }
 
+        // Section: Handle the logic for apply theme to component.
         applyThemeToComponent(root, light, dark, baseBg, darkMode);
 
         if (root instanceof Window w) {
@@ -99,6 +120,7 @@ public final class ThemeApplier {
         }
 
         if (comp instanceof JComboBox<?> combo) {
+            // Section: Handle the logic for style combo box.
             styleComboBox(combo, darkMode, dark);
         }
 
@@ -111,11 +133,13 @@ public final class ThemeApplier {
 
         if (comp instanceof Container container) {
             for (Component child : container.getComponents()) {
+                // Section: Handle the logic for apply theme to component.
                 applyThemeToComponent(child, light, dark, baseBg, darkMode);
             }
         }
     }
 
+    // Section: Handle the logic for style combo box.
     private static void styleComboBox(JComboBox<?> combo, boolean darkMode, Color accent) {
         combo.setBackground(Color.WHITE);
         combo.setForeground(Color.BLACK);
@@ -154,12 +178,14 @@ public final class ThemeApplier {
         private final boolean darkMode;
         private final Color accent;
 
+        // Section: Handle the logic for modern combo box ui.
         private ModernComboBoxUI(boolean darkMode, Color accent) {
             this.darkMode = darkMode;
             this.accent = accent;
         }
 
         @Override
+        // Section: Build and return the elements needed to arrow button.
         protected JButton createArrowButton() {
             JButton button = new BasicArrowButton(SwingConstants.SOUTH, accent, accent, Color.BLACK, accent);
             button.setBorder(BorderFactory.createEmptyBorder());
@@ -169,9 +195,11 @@ public final class ThemeApplier {
         }
 
         @Override
+        // Section: Build and return the elements needed to popup.
         protected ComboPopup createPopup() {
             BasicComboPopup popup = new BasicComboPopup(comboBox) {
                 @Override
+                // Section: Build and return the elements needed to scroller.
                 protected JScrollPane createScroller() {
                     JScrollPane sp = new JScrollPane(list,
                             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,

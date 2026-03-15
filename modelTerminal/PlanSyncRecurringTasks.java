@@ -1,14 +1,32 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncRecurringTasks part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.io.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import util.AppPaths;
 
 public class PlanSyncRecurringTasks {
 
-    private static final String RECURRING_FILE = "recurring_tasks.txt";
+    private static final String RECURRING_FILE = AppPaths.getDataFile("recurring_tasks.txt").getPath();
 
     public static ArrayList<RecurringTask> recurringTasks = new ArrayList<>();
     public static DateTimeFormatter formatter =
@@ -35,12 +53,15 @@ public class PlanSyncRecurringTasks {
 
     /* ================= NAVIGATION LOOP ================= */
 
+    // Section: Handle the logic for run.
     public static Navigation run() {
 
+        // Section: Read and prepare the data used to recurring.
         loadRecurring();
 
         while (true) {
 
+            // Section: Handle the logic for display recurring tasks.
             displayRecurringTasks();
 
             System.out.println("1. Display Recurring Tasks");
@@ -65,24 +86,31 @@ public class PlanSyncRecurringTasks {
                     PlanSyncDeleteRecurringTasks.deleteRecurringTasks();
                     break;
                 case "4":
+                    // Section: Persist the data used to recurring.
                     saveRecurring();
                     return Navigation.ACTIVE_TASKS;
                 case "5":
+                    // Section: Persist the data used to recurring.
                     saveRecurring();
                     return Navigation.COMPLETED_TASKS;
                 case "6":
+                    // Section: Persist the data used to recurring.
                     saveRecurring();
                     return Navigation.TIMER;
                 case "7":
+                    // Section: Persist the data used to recurring.
                     saveRecurring();
                     return Navigation.STOPWATCH;
                 case "8":
+                    // Section: Persist the data used to recurring.
                     saveRecurring();
                     return Navigation.TIME_CALCULATOR;
                 case "9":
+                    // Section: Persist the data used to recurring.
                     saveRecurring();
                     return Navigation.CALENDAR;
                 case "0":
+                    // Section: Persist the data used to recurring.
                     saveRecurring();
                     return Navigation.MAIN;
             }
@@ -91,6 +119,7 @@ public class PlanSyncRecurringTasks {
 
     /* ================= DISPLAY METHOD ================= */
 
+    // Section: Handle the logic for display recurring tasks.
     public static void displayRecurringTasks() {
 
         System.out.println("\n--- RECURRING TASKS ---");
@@ -148,6 +177,7 @@ public class PlanSyncRecurringTasks {
                         if (month > today.getMonthValue()) {
                             next = LocalDate.of(today.getYear(), month, day);
 
+                        // Section: Handle the logic for if.
                         } else if (month < today.getMonthValue()) {
                             next = LocalDate.of(today.getYear() + 1, month, day);
 
@@ -186,6 +216,7 @@ public class PlanSyncRecurringTasks {
                     default -> status = "UNKNOWN";
                 }
 
+            // Section: Handle the logic for catch.
             } catch (Exception e) {
                 status = "INVALID DATA";
             }
@@ -214,6 +245,7 @@ public class PlanSyncRecurringTasks {
 
     /* ================= FORMAT MONTH NAME ================= */
 
+    // Section: Handle the logic for format monthly display.
     private static String formatMonthlyDisplay(String timeDate) {
 
         try {
@@ -227,6 +259,7 @@ public class PlanSyncRecurringTasks {
 
             return temp.format(DateTimeFormatter.ofPattern("d MMMM"));
 
+        // Section: Handle the logic for catch.
         } catch (Exception e) {
             return timeDate;
         }
@@ -234,6 +267,7 @@ public class PlanSyncRecurringTasks {
 
     /* ================= FILE HANDLING ================= */
 
+    // Section: Persist the data used to recurring.
     public static void saveRecurring() {
 
         try (BufferedWriter bw =
@@ -249,12 +283,14 @@ public class PlanSyncRecurringTasks {
                 bw.newLine();
             }
 
+        // Section: Handle the logic for catch.
         } catch (IOException e) {
             System.out.println("Error saving recurring tasks: "
                     + e.getMessage());
         }
     }
 
+    // Section: Read and prepare the data used to recurring.
     public static void loadRecurring() {
 
         recurringTasks.clear();
@@ -284,6 +320,7 @@ public class PlanSyncRecurringTasks {
                 );
             }
 
+        // Section: Handle the logic for catch.
         } catch (IOException e) {
             System.out.println("Error loading recurring tasks: "
                     + e.getMessage());

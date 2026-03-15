@@ -1,4 +1,21 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncTimeCalculator part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10,6 +27,7 @@ public class PlanSyncTimeCalculator {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+    // Section: Handle the logic for run.
     public static Navigation run() {
         while (true) {
             System.out.println("\n--- TIME CALCULATOR ---");
@@ -43,6 +61,7 @@ public class PlanSyncTimeCalculator {
 
     /* ================= 1. ADD DURATION FROM NOW ================= */
 
+    // Section: Add the data or behavior needed to duration from now.
     private static void addDurationFromNow() {
         while (true) {
             System.out.print("\nEnter duration (e.g. '1 Day 2 Hours 30 Minutes'): ");
@@ -84,6 +103,7 @@ public class PlanSyncTimeCalculator {
 
     /* ================= 2. DURATION BETWEEN TIMES ================= */
 
+    // Section: Handle the logic for duration between times.
     private static void durationBetweenTimes() {
         // Get valid start time
         String startInput;
@@ -131,6 +151,7 @@ public class PlanSyncTimeCalculator {
             System.out.printf("\nResult: %d HOUR%s %d MINUTE%s\n", 
                             hours, hours == 1 ? "" : "S", 
                             minutes, minutes == 1 ? "" : "S");
+        // Section: Handle the logic for catch.
         } catch (NumberFormatException e) {
             System.out.println("\nError processing times.");
         }
@@ -138,6 +159,7 @@ public class PlanSyncTimeCalculator {
 
     /* ================= 3. DURATION BETWEEN DATES ================= */
 
+    // Section: Handle the logic for duration between dates.
     private static void durationBetweenDates() {
         // Get valid start date
         String startDateStr;
@@ -207,6 +229,7 @@ public class PlanSyncTimeCalculator {
                     System.out.println(buildParallelBreakdown(start, end));
                     break;
             }
+        // Section: Handle the logic for catch.
         } catch (Exception e) {
             System.out.println("\nError processing dates.");
         }
@@ -214,6 +237,7 @@ public class PlanSyncTimeCalculator {
 
     /* ================= VALIDATION HELPERS ================= */
 
+    // Section: Report whether valid time.
     private static boolean isValidTime(String timeStr) {
         try {
             String[] parts = timeStr.split(":");
@@ -223,15 +247,18 @@ public class PlanSyncTimeCalculator {
             int minute = Integer.parseInt(parts[1]);
             
             return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+        // Section: Handle the logic for catch.
         } catch (NumberFormatException e) {
             return false;
         }
     }
 
+    // Section: Report whether valid date.
     private static boolean isValidDate(String dateStr) {
         try {
             LocalDate.parse(dateStr, DATE_FORMAT);
             return true;
+        // Section: Handle the logic for catch.
         } catch (Exception e) {
             return false;
         }
@@ -239,6 +266,7 @@ public class PlanSyncTimeCalculator {
 
     /* ================= HELPER METHODS ================= */
 
+    // Section: Handle the logic for build parallel breakdown.
     private static String buildParallelBreakdown(LocalDate start, LocalDate end) {
         long years = ChronoUnit.YEARS.between(start, end);
         long months = ChronoUnit.MONTHS.between(start, end);

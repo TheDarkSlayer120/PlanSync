@@ -1,13 +1,31 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncCompletedTasks part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import util.AppPaths;
 
 public class PlanSyncCompletedTasks {
 
-    private static final String COMPLETED_FILE = "completed_tasks.txt";
+    private static final String COMPLETED_FILE = AppPaths.getDataFile("completed_tasks.txt").getPath();
     private static final DateTimeFormatter DATE_FMT =
             DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -23,10 +41,13 @@ public class PlanSyncCompletedTasks {
         LocalDate completedOn;
     }
 
+    // Section: Handle the logic for run.
     public static Navigation run() {
+        // Section: Read and prepare the data used to completed.
         loadCompleted();
 
         while (true) {
+            // Section: Handle the logic for display completed list.
             displayCompletedList();
 
             System.out.println("\n--- COMPLETED TASKS ---");
@@ -60,10 +81,12 @@ public class PlanSyncCompletedTasks {
 
     /* ================= PUBLIC API ================= */
 
+    // Section: Return the data used to completed tasks.
     public static Map<String, CompletedTask> getCompletedTasks() {
         return completedTasks;
     }
 
+    // Section: Return the data used to by index.
     public static CompletedTask getByIndex(int index) {
         int i = 1;
         for (CompletedTask t : completedTasks.values()) {
@@ -72,16 +95,19 @@ public class PlanSyncCompletedTasks {
         return null;
     }
 
+    // Section: Handle the logic for remove by id.
     public static void removeById(String id) {
         completedTasks.remove(id);
     }
 
+    // Section: Handle the logic for clear all.
     public static void clearAll() {
         completedTasks.clear();
     }
 
     public static void addCompleted(String name, String description,
                                     LocalDate deadline, LocalDate completedOn) {
+        // Section: Read and prepare the data used to completed.
         loadCompleted();
 
         String id = "C" + (completedTasks.size() + 1);
@@ -94,12 +120,15 @@ public class PlanSyncCompletedTasks {
         t.completedOn = completedOn;
 
         completedTasks.put(t.id, t);
+        // Section: Persist the data used to completed.
         saveCompleted();
     }
 
     /* ================= DISPLAY ================= */
 
+    // Section: Handle the logic for display completed list.
     public static void displayCompletedList() {
+        // Section: Read and prepare the data used to completed.
         loadCompleted();
 
         LocalDate today = LocalDate.now();
@@ -135,6 +164,7 @@ public class PlanSyncCompletedTasks {
 
     /* ================= FILE HANDLING ================= */
 
+    // Section: Read and prepare the data used to completed.
     private static void loadCompleted() {
         completedTasks.clear();
         try (BufferedReader br =
@@ -159,6 +189,7 @@ public class PlanSyncCompletedTasks {
         } catch (IOException ignored) {}
     }
 
+    // Section: Persist the data used to completed.
     private static void saveCompleted() {
         try (BufferedWriter bw =
                      new BufferedWriter(new FileWriter(COMPLETED_FILE))) {
@@ -174,6 +205,7 @@ public class PlanSyncCompletedTasks {
                         t.description + "|" + deadline + "|" + completed);
                 bw.newLine();
             }
+        // Section: Handle the logic for catch.
         } catch (IOException e) {
             System.out.println("Error saving completed tasks: "
                     + e.getMessage());

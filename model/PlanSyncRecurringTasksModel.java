@@ -1,5 +1,22 @@
 package model;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncRecurringTasksModel part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.io.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -8,11 +25,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import util.AppPaths;
 
 public class PlanSyncRecurringTasksModel {
 
-    private static final String DATA_DIR = "data";
-    private static final File RECURRING_FILE = new File(DATA_DIR, "recurring_tasks.txt");
+    private static final File DATA_DIR = AppPaths.getDataDir().toFile();
+    private static final File RECURRING_FILE = AppPaths.getDataFile("recurring_tasks.txt");
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -23,6 +41,7 @@ public class PlanSyncRecurringTasksModel {
         public final String timeDate;
         public final String frequency;
 
+        // Section: Handle the logic for recurring task.
         public RecurringTask(String name, String description, String timeDate, String frequency) {
             this.name = name;
             this.description = description;
@@ -33,7 +52,9 @@ public class PlanSyncRecurringTasksModel {
 
     private final List<RecurringTask> tasks = new ArrayList<>();
 
+    // Section: Return the data used to tasks.
     public synchronized List<RecurringTask> getTasks() {
+        // Section: Read and prepare the data used to load.
         load();
         return new ArrayList<>(tasks);
     }
@@ -44,30 +65,40 @@ public class PlanSyncRecurringTasksModel {
  * @param id1Based 1..N
  * @return RecurringTask or null if out of range
  */
+// Section: Return the data used to task by id.
 public synchronized RecurringTask getTaskById(int id1Based) {
+    // Section: Read and prepare the data used to load.
     load();
     int idx = id1Based - 1;
     if (idx < 0 || idx >= tasks.size()) return null;
     return tasks.get(idx);
 }
 
+// Section: Refresh or recompute the state used to task by id.
 public synchronized void updateTaskById(int id1Based, String name, String description, String timeDate, String frequency) {
+    // Section: Read and prepare the data used to load.
     load();
     int idx = id1Based - 1;
     if (idx < 0 || idx >= tasks.size()) {
         throw new IllegalArgumentException("Task ID out of range: " + id1Based);
     }
     tasks.set(idx, new RecurringTask(clean(name), clean(description), clean(timeDate), clean(frequency).toUpperCase()));
+    // Section: Persist the data used to save.
     save();
 }
 
+    // Section: Add the data or behavior needed to task.
     public synchronized void addTask(String name, String description, String timeDate, String frequency) {
+        // Section: Read and prepare the data used to load.
         load();
         tasks.add(new RecurringTask(clean(name), clean(description), clean(timeDate), clean(frequency).toUpperCase()));
+        // Section: Persist the data used to save.
         save();
     }
 
+    // Section: Remove the items involved in tasks by indexes.
     public synchronized void deleteTasksByIndexes(Collection<Integer> indexes0Based) {
+        // Section: Read and prepare the data used to load.
         load();
         List<Integer> idx = new ArrayList<>();
         for (Integer i : indexes0Based) {
@@ -75,14 +106,18 @@ public synchronized void updateTaskById(int id1Based, String name, String descri
         }
         idx.sort(Integer::compareTo);
         for (int i = idx.size() - 1; i >= 0; i--) tasks.remove((int) idx.get(i));
+        // Section: Persist the data used to save.
         save();
     }
 
+    // Section: Handle the logic for format for display.
     public synchronized String formatForDisplay() {
         return formatForDisplay(93);
     }
 
+    // Section: Handle the logic for format for display.
     public synchronized String formatForDisplay(int widthChars) {
+        // Section: Read and prepare the data used to load.
         load();
         int width = Math.max(40, widthChars);
 
@@ -120,20 +155,24 @@ public synchronized void updateTaskById(int id1Based, String name, String descri
         return sb.toString();
     }
 
+    // Section: Handle the logic for parse time hhmm.
     public static LocalTime parseTimeHHmm(String time) throws DateTimeParseException {
         return LocalTime.parse(time, TIME_FMT);
     }
 
+    // Section: Handle the logic for validate day month year.
     public static void validateDayMonthYear(String dayMonth, String yearYYYY) throws DateTimeParseException {
         LocalDate.parse(dayMonth + "/" + yearYYYY, DATE_FMT);
     }
 
+    // Section: Handle the logic for validate day month.
     public static void validateDayMonth(String dayDD, String monthMM) throws DateTimeParseException {
         int d = Integer.parseInt(dayDD);
         int m = Integer.parseInt(monthMM);
         LocalDate.parse(String.format("%02d/%02d/2000", d, m), DATE_FMT);
     }
 
+    // Section: Handle the logic for compute status.
     private static String computeStatus(RecurringTask task, LocalDate today) {
         try {
             return switch (task.frequency.toUpperCase()) {
@@ -176,11 +215,13 @@ public synchronized void updateTaskById(int id1Based, String name, String descri
                 }
                 default -> "UNKNOWN";
             };
+        // Section: Handle the logic for catch.
         } catch (Exception e) {
             return "INVALID DATA";
         }
     }
 
+    // Section: Handle the logic for format monthly display.
     private static String formatMonthlyDisplay(String timeDate) {
         try {
             String datePart = timeDate.split(" ")[0];
@@ -189,17 +230,21 @@ public synchronized void updateTaskById(int id1Based, String name, String descri
             int month = Integer.parseInt(parts[1]);
             LocalDate temp = LocalDate.of(2000, month, day);
             return temp.format(DateTimeFormatter.ofPattern("d MMMM"));
+        // Section: Handle the logic for catch.
         } catch (Exception e) {
             return timeDate;
         }
     }
 
+    // Section: Handle the logic for ensure data dir.
     private static void ensureDataDir() {
-        File dir = new File(DATA_DIR);
+        File dir = DATA_DIR;
         if (!dir.exists()) dir.mkdirs();
     }
 
+    // Section: Read and prepare the data used to load.
     private void load() {
+        // Section: Handle the logic for ensure data dir.
         ensureDataDir();
         tasks.clear();
         if (!RECURRING_FILE.exists()) return;
@@ -214,7 +259,9 @@ public synchronized void updateTaskById(int id1Based, String name, String descri
         } catch (IOException ignored) {}
     }
 
+    // Section: Persist the data used to save.
     private void save() {
+        // Section: Handle the logic for ensure data dir.
         ensureDataDir();
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(RECURRING_FILE))) {
             for (RecurringTask t : tasks) {
@@ -224,11 +271,13 @@ public synchronized void updateTaskById(int id1Based, String name, String descri
         } catch (IOException ignored) {}
     }
 
+    // Section: Handle the logic for clean.
     private static String clean(String s) {
         if (s == null) return "";
         return s.trim().replace("|", "/");
     }
 
+    // Section: Handle the logic for center line.
     private static String centerLine(String line, int width) {
         if (line == null) line = "";
         if (line.length() >= width) return line;
@@ -236,6 +285,7 @@ public synchronized void updateTaskById(int id1Based, String name, String descri
         return " ".repeat(Math.max(0, pad)) + line;
     }
 
+    // Section: Handle the logic for double line.
     private static String doubleLine(int width) {
         int w = Math.max(1, width);
         String line = "=".repeat(w);

@@ -1,5 +1,22 @@
 package components;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncDialogs part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 import views.RoundedPanel;
 
@@ -16,11 +33,14 @@ public final class PlanSyncDialogs {
 
     private PlanSyncDialogs() {}
 
+    // Section: Handle the logic for confirm.
     public static boolean confirm(Component parent, AppController controller, String title, String message) {
         return showDialog(parent, controller, title, message, true);
     }
 
+    // Section: Handle the logic for alert.
     public static void alert(Component parent, AppController controller, String title, String message) {
+        // Section: Handle UI flow to dialog.
         showDialog(parent, controller, title, message, false);
     }
 
@@ -122,6 +142,7 @@ public final class PlanSyncDialogs {
         return result[0];
     }
 
+    // Section: Handle the logic for button.
     private static JButton button(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
@@ -131,6 +152,7 @@ public final class PlanSyncDialogs {
         return b;
     }
 
+    // Section: Handle the logic for wrap.
     private static String wrap(String text) {
         if (text == null) return "";
         return "<html><div style='text-align:center; width:340px;'>" +
@@ -138,6 +160,7 @@ public final class PlanSyncDialogs {
                 "</div></html>";
     }
 
+    // Section: Handle the logic for escape.
     private static String escape(String s) {
         return s
                 .replace("&", "&amp;")
@@ -155,6 +178,7 @@ public final class PlanSyncDialogs {
         private final int stroke;
         private final Color color;
 
+        // Section: Handle the logic for rounded stroke border.
         private RoundedStrokeBorder(int radius, int stroke, Color color) {
             this.radius = radius;
             this.stroke = Math.max(1, stroke);
@@ -162,6 +186,7 @@ public final class PlanSyncDialogs {
         }
 
         @Override
+        // Section: Return the data used to border insets.
         public Insets getBorderInsets(Component c) {
             // keep some room for the stroke so it doesn't get clipped
             int s = stroke;
@@ -169,6 +194,7 @@ public final class PlanSyncDialogs {
         }
 
         @Override
+        // Section: Return the data used to border insets.
         public Insets getBorderInsets(Component c, Insets insets) {
             Insets i = getBorderInsets(c);
             insets.top = i.top;
@@ -179,6 +205,7 @@ public final class PlanSyncDialogs {
         }
 
         @Override
+        // Section: Handle the logic for paint border.
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
             Graphics2D g2 = (Graphics2D) g.create();
             try {

@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the EditActiveTaskView part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 import components.PlanSyncDialogs;
 import model.PlanSyncActiveTasksModel;
@@ -36,12 +53,14 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
         this.controller = controller;
         this.activeModel = activeModel;
 
+        // Section: Update the state used to layout.
         setLayout(new BorderLayout());
 
         JLabel title = new JLabel("E D I T   A C T I V E   T A S K", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.putClientProperty("on_base", true);
         title.setBorder(BorderFactory.createEmptyBorder(25, 10, 10, 10));
+        // Section: Add the data or behavior needed to add.
         add(title, BorderLayout.NORTH);
 
         // Make the edit screen scrollable so smaller windows don't squash the UI.
@@ -70,7 +89,9 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
         scroll.getViewport().setOpaque(false);
 
         scroll.getViewport().addComponentListener(new ComponentAdapter() {
+            // Section: Handle the logic for component resized.
             @Override public void componentResized(ComponentEvent e) {
+                // Section: Refresh or recompute the state used to list text.
                 updateListText();
             }
         });
@@ -188,22 +209,27 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
         contentScroll.setOpaque(false);
         contentScroll.getViewport().setOpaque(false);
         contentScroll.getVerticalScrollBar().setUnitIncrement(16);
+        // Section: Add the data or behavior needed to add.
         add(contentScroll, BorderLayout.CENTER);
 
+        // Section: Update the state used to editing enabled.
         setEditingEnabled(false);
     }
 
+    // Section: Update the state used to editing enabled.
     private void setEditingEnabled(boolean enabled) {
         nameField.setEnabled(enabled);
         descArea.setEnabled(enabled);
         dateField.setEnabled(enabled);
     }
 
+    // Section: Handle the logic for on load.
     private void onLoad() {
         String raw = idField.getText().trim();
         int id;
         try {
             id = Integer.parseInt(raw);
+        // Section: Handle the logic for catch.
         } catch (NumberFormatException ex) {
             PlanSyncDialogs.alert(this, controller, "Invalid ID", "Please enter a valid numeric task ID.");
             return;
@@ -219,11 +245,13 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
         nameField.setText(t.name);
         descArea.setText(t.description);
         dateField.setText(t.deadline.format(PlanSyncActiveTasksModel.getDateFormatter()));
+        // Section: Update the state used to editing enabled.
         setEditingEnabled(true);
 
         // ✅ Removed success pop-up on load
     }
 
+    // Section: Handle the logic for on save.
     private void onSave() {
         if (loadedId == null) {
             PlanSyncDialogs.alert(this, controller, "Nothing Loaded", "Load a task first (enter ID and press LOAD).");
@@ -251,13 +279,16 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
             activeModel.updateTaskById(loadedId, name, desc, date);
             // ✅ Removed unnecessary “task updated” pop-up
             controller.showActiveTasks();
+        // Section: Handle the logic for catch.
         } catch (DateTimeParseException ex) {
             PlanSyncDialogs.alert(this, controller, "Invalid Date", "Invalid date format. Please use DD/MM/YYYY.");
+        // Section: Handle the logic for catch.
         } catch (IllegalArgumentException ex) {
             PlanSyncDialogs.alert(this, controller, "Invalid ID", ex.getMessage());
         }
     }
 
+    // Section: Handle the logic for section label.
     private JLabel sectionLabel(String text) {
         JLabel l = new JLabel(text, SwingConstants.CENTER);
         l.setFont(new Font("SansSerif", Font.BOLD, 18));
@@ -265,6 +296,7 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
         return l;
     }
 
+    // Section: Handle the logic for rounded field panel.
     private RoundedPanel roundedFieldPanel() {
         RoundedPanel p = new RoundedPanel(28);
         p.putClientProperty("themed", true);
@@ -273,6 +305,7 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
         return p;
     }
 
+    // Section: Handle the logic for big button.
     private JButton bigButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
@@ -281,6 +314,7 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
         return b;
     }
 
+    // Section: Return the data used to width chars.
     private int getWidthChars() {
         int px = scroll.getViewport().getExtentSize().width;
         Insets in = taskArea.getInsets();
@@ -295,19 +329,23 @@ public class EditActiveTaskView extends JPanel implements RefreshableView {
         return Math.max(40, chars);
     }
 
+    // Section: Refresh or recompute the state used to list text.
     private void updateListText() {
         taskArea.setText(activeModel.formatForDisplay(getWidthChars()));
         taskArea.setCaretPosition(0);
     }
 
     @Override
+    // Section: Handle the logic for refresh.
     public void refresh() {
+        // Section: Refresh or recompute the state used to list text.
         updateListText();
         idField.setText("");
         nameField.setText("");
         descArea.setText("");
         dateField.setText("");
         loadedId = null;
+        // Section: Update the state used to editing enabled.
         setEditingEnabled(false);
     }
 }

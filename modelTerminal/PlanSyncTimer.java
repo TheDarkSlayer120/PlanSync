@@ -1,4 +1,21 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncTimer part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.awt.Toolkit;
 
 public class PlanSyncTimer {
@@ -11,6 +28,7 @@ public class PlanSyncTimer {
 
     private static Thread displayThread;
 
+    // Section: Handle the logic for run.
     public static Navigation run() {
         while (true) {
             System.out.println("\n--- TIMER ---");
@@ -40,6 +58,7 @@ public class PlanSyncTimer {
 
     /* ================= TIMER FLOW ================= */
 
+    // Section: Handle the logic for start timer flow.
     private static void startTimerFlow() {
         int duration = getDurationFromPresetsOrCustom();
         if (duration <= 0) return;
@@ -57,6 +76,7 @@ public class PlanSyncTimer {
                     remainingSeconds--;
                     if (remainingSeconds == 0) {
                         Toolkit.getDefaultToolkit().beep();
+                        // Section: Handle the logic for stop display thread.
                         stopDisplayThread();
                         System.out.println("Time's up!");
                         System.out.println("\nPress Enter to continue...");
@@ -72,16 +92,19 @@ public class PlanSyncTimer {
         countdownThread.setDaemon(true);
         countdownThread.start();
 
+        // Section: Handle the logic for start display thread.
         startDisplayThread();
 
         liveControlLoop();      // exits when stopped or finished
 
+        // Section: Handle the logic for stop display thread.
         stopDisplayThread();
         System.out.println();
     }
 
     /* ============ LIVE DISPLAY ============ */
 
+    // Section: Handle the logic for start display thread.
     private static void startDisplayThread() {
         if (displayThread != null && displayThread.isAlive()) return;
 
@@ -95,6 +118,7 @@ public class PlanSyncTimer {
         displayThread.start();
     }
 
+    // Section: Handle the logic for stop display thread.
     private static void stopDisplayThread() {
         if (displayThread != null && displayThread.isAlive()) {
             displayThread.interrupt();
@@ -107,8 +131,10 @@ public class PlanSyncTimer {
 
     /* ================= LIVE CONTROLS ================= */
 
+    // Section: Handle the logic for live control loop.
     private static void liveControlLoop() {
         while (running && remainingSeconds > 0) {
+            // Section: Handle the logic for stop display thread.
             stopDisplayThread();
 
             System.out.println("\n--- TIMER CONTROLS ---");
@@ -134,6 +160,7 @@ public class PlanSyncTimer {
             }
 
             if (running && remainingSeconds > 0 && !finished) {
+                // Section: Handle the logic for start display thread.
                 startDisplayThread();
             }
         }
@@ -141,12 +168,14 @@ public class PlanSyncTimer {
 
     /* ================= ACTIONS ================= */
 
+    // Section: Handle the logic for pause.
     private static void pause() {
         if (!paused && remainingSeconds > 0) {
             paused = true;
             System.out.println("Timer paused. Remaining: " + formatTime(remainingSeconds));
             System.out.println("\n");
             
+        // Section: Handle the logic for if.
         } else if (remainingSeconds == 0) {
             System.out.println("Timer already finished. Reset if you want to start again.");
             System.out.println("\n");
@@ -156,11 +185,13 @@ public class PlanSyncTimer {
         }
     }
 
+    // Section: Handle the logic for resume.
     private static void resume() {
         if (paused && remainingSeconds > 0) {
             paused = false;
             System.out.println("Timer resumed. Remaining: " + formatTime(remainingSeconds));
             System.out.println("\n");
+        // Section: Handle the logic for if.
         } else if (remainingSeconds == 0) {
             System.out.println("Timer already finished. Reset first to start again.");
             System.out.println("\n");
@@ -170,6 +201,7 @@ public class PlanSyncTimer {
         }
     }
 
+    // Section: Handle the logic for reset.
     private static void reset() {
         remainingSeconds = initialSeconds;
         paused = false;
@@ -178,6 +210,7 @@ public class PlanSyncTimer {
         System.out.println("\n");
     }
 
+    // Section: Handle the logic for stop.
     private static void stop() {
         running = false;
         paused = false;
@@ -189,6 +222,7 @@ public class PlanSyncTimer {
     /* ================= PRESETS + INPUT ================= */
 
     // New menu: presets + custom time
+    // Section: Return the data used to duration from presets or custom.
     private static int getDurationFromPresetsOrCustom() {
         while (true) {
             System.out.println("\nChoose preset time:");
@@ -220,6 +254,7 @@ public class PlanSyncTimer {
     }
 
     // Existing custom input menu
+    // Section: Return the data used to duration in seconds.
     private static int getDurationInSeconds() {
         System.out.println("\nChoose time unit:");
         System.out.println("1. Hours");
@@ -248,6 +283,7 @@ public class PlanSyncTimer {
             int value = Integer.parseInt(ConsoleUtils.scanner.nextLine());
             if (value <= 0) throw new NumberFormatException();
             return value * multiplier;
+        // Section: Handle the logic for catch.
         } catch (NumberFormatException e) {
             System.out.println("Invalid number.");
             return 0;
@@ -256,6 +292,7 @@ public class PlanSyncTimer {
 
     /* ================= DISPLAY ================= */
 
+    // Section: Handle the logic for format time.
     private static String formatTime(int totalSeconds) {
         int hours = totalSeconds / 3600;
         int minutes = (totalSeconds % 3600) / 60;

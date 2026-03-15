@@ -1,9 +1,27 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncMarkCompletedTasks part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class PlanSyncMarkCompletedTasks {
 
+    // Section: Handle the logic for mark completed tasks.
     public static void markCompletedTasks() {
 
         if (PlanSyncActiveTasks.activeTasks.isEmpty()) {
@@ -43,6 +61,7 @@ public class PlanSyncMarkCompletedTasks {
                         System.out.println("Invalid task number: " + s);
                     }
 
+                // Section: Handle the logic for catch.
                 } catch (NumberFormatException e) {
                     System.out.println("Invalid input (not a number): " + s);
                 }

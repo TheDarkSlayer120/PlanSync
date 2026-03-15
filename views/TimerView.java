@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the TimerView part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 import components.PlanSyncDialogs;
 import model.PlanSyncTimer;
@@ -26,7 +43,9 @@ public class TimerView extends JPanel {
         this.controller = controller;
         this.timer = timer;
 
+        // Section: Update the state used to layout.
         setLayout(new BorderLayout());
+        // Section: Update the state used to background.
         setBackground(Color.WHITE);
 
         // ===== TITLE =====
@@ -34,6 +53,7 @@ public class TimerView extends JPanel {
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         title.putClientProperty("on_base", true);
+        // Section: Add the data or behavior needed to add.
         add(title, BorderLayout.NORTH);
 
         // ===== MAIN VERTICAL LAYOUT =====
@@ -41,6 +61,7 @@ public class TimerView extends JPanel {
         center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
         center.setOpaque(false);
         center.setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
+        // Section: Add the data or behavior needed to add.
         add(center, BorderLayout.CENTER);
 
         // ===== BIG DISPLAY PANEL =====
@@ -66,9 +87,18 @@ public class TimerView extends JPanel {
         resetButton = new JButton("RESET");
         stopButton = new JButton("STOP");
         startButton = new JButton("START");
+        // Section: Handle the logic for style main button.
         styleMainButton(resetButton);
+        // Section: Handle the logic for style main button.
         styleMainButton(stopButton);
+        // Section: Handle the logic for style main button.
         styleMainButton(startButton);
+        // Section: Handle the logic for refresh button state.
+        refreshButtonState(resetButton);
+        // Section: Handle the logic for refresh button state.
+        refreshButtonState(stopButton);
+        // Section: Handle the logic for refresh button state.
+        refreshButtonState(startButton);
 
         buttonRow.add(resetButton);
         buttonRow.add(stopButton);
@@ -83,11 +113,17 @@ public class TimerView extends JPanel {
         presetGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 170));
         presetGrid.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 
+        // Section: Add the data or behavior needed to preset button.
         addPresetButton(presetGrid, "00:01:00", 60);
+        // Section: Add the data or behavior needed to preset button.
         addPresetButton(presetGrid, "00:05:00", 5 * 60);
+        // Section: Add the data or behavior needed to preset button.
         addPresetButton(presetGrid, "00:10:00", 10 * 60);
+        // Section: Add the data or behavior needed to preset button.
         addPresetButton(presetGrid, "00:15:00", 15 * 60);
+        // Section: Add the data or behavior needed to preset button.
         addPresetButton(presetGrid, "00:30:00", 30 * 60);
+        // Section: Add the data or behavior needed to preset button.
         addPresetButton(presetGrid, "01:00:00", 60 * 60);
 
         center.add(presetGrid);
@@ -127,7 +163,10 @@ public class TimerView extends JPanel {
         gbc.gridx = 5; customBar.add(secondsField, gbc);
 
         JButton setButton = new JButton("SET");
+        // Section: Handle the logic for style main button.
         styleMainButton(setButton);
+        // Section: Handle the logic for refresh button state.
+        refreshButtonState(setButton);
         setButton.setPreferredSize(new Dimension(90, 32));
         gbc.gridx = 6; customBar.add(setButton, gbc);
 
@@ -146,12 +185,14 @@ public class TimerView extends JPanel {
         // ===== TIMER LISTENER =====
         timer.setListener(new TimerListener() {
             @Override
+            // Section: Handle the logic for on tick.
             public void onTick(int remainingSeconds) {
                 SwingUtilities.invokeLater(() ->
                         timeLabel.setText(PlanSyncTimer.formatTime(remainingSeconds)));
             }
 
             @Override
+            // Section: Handle the logic for on finished.
             public void onFinished() {
                 SwingUtilities.invokeLater(() ->
                         PlanSyncDialogs.alert(
@@ -164,6 +205,7 @@ public class TimerView extends JPanel {
             }
 
             @Override
+            // Section: Handle the logic for on state changed.
             public void onStateChanged(boolean running, boolean paused) {
                 SwingUtilities.invokeLater(() -> {
                     startButton.setText(paused ? "RESUME" : "START");
@@ -176,14 +218,33 @@ public class TimerView extends JPanel {
         timer.setDuration(1 * 60);
     }
 
+    // Section: Handle the logic for style main button.
     private void styleMainButton(JButton b) {
         b.setFocusPainted(false);
-        b.setBackground(new Color(95, 125, 195));
-        b.setForeground(Color.BLACK);
         b.setFont(new Font("SansSerif", Font.BOLD, 18));
         b.setBorder(BorderFactory.createEmptyBorder(10, 18, 10, 18));
+        b.setOpaque(true);
+        b.setContentAreaFilled(true);
+        b.setBorderPainted(false);
+        b.putClientProperty("JButton.buttonType", "square");
+        b.addPropertyChangeListener("enabled", e -> refreshButtonState(b));
+        // Section: Handle the logic for refresh button state.
+        refreshButtonState(b);
     }
 
+    // Section: Handle the logic for refresh button state.
+    private void refreshButtonState(JButton b) {
+        if (b.isEnabled()) {
+            b.setBackground(new Color(95, 125, 195));
+            b.setForeground(Color.BLACK);
+        } else {
+            b.setBackground(new Color(160, 176, 220));
+            b.setForeground(new Color(72, 84, 120));
+        }
+        b.repaint();
+    }
+
+    // Section: Add the data or behavior needed to preset button.
     private void addPresetButton(JPanel parent, String label, int seconds) {
         JButton b = new JButton(label);
         b.setFocusPainted(false);
@@ -195,6 +256,7 @@ public class TimerView extends JPanel {
         parent.add(b);
     }
 
+    // Section: Build and return the elements needed to time field.
     private JTextField createTimeField(String text) {
         JTextField field = new JTextField(text, 2);
         field.setHorizontalAlignment(JTextField.CENTER);
@@ -207,6 +269,7 @@ public class TimerView extends JPanel {
         return field;
     }
 
+    // Section: Handle the logic for apply custom time.
     private void applyCustomTime() {
         try {
             int h = Integer.parseInt(hoursField.getText().trim());
@@ -226,6 +289,7 @@ public class TimerView extends JPanel {
 
             timer.setDuration(total);
 
+        // Section: Handle the logic for catch.
         } catch (NumberFormatException ex) {
             PlanSyncDialogs.alert(this, controller, "Error", "Enter valid numbers (00-59 for Minutes/Seconds).");
         }

@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the CompletedTasksView part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 import components.PlanSyncDialogs;
 import model.PlanSyncCompletedTasksModel;
@@ -22,12 +39,14 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
         this.controller = controller;
         this.completedModel = completedModel;
 
+        // Section: Update the state used to layout.
         setLayout(new BorderLayout());
 
         JLabel title = new JLabel("C O M P L E T E D   T A S K S", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.putClientProperty("on_base", true);
         title.setBorder(BorderFactory.createEmptyBorder(25, 10, 10, 10));
+        // Section: Add the data or behavior needed to add.
         add(title, BorderLayout.NORTH);
 
         // ✅ Same as Active/Recurring
@@ -51,7 +70,9 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
 
         // ✅ Same dynamic resize behavior as Active/Recurring
         scroll.getViewport().addComponentListener(new ComponentAdapter() {
+            // Section: Handle the logic for component resized.
             @Override public void componentResized(ComponentEvent e) {
+                // Section: Refresh or recompute the state used to list text.
                 updateListText();
             }
         });
@@ -80,11 +101,14 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
         center.add(listPanel, BorderLayout.CENTER);
         center.add(buttons, BorderLayout.SOUTH);
 
+        // Section: Add the data or behavior needed to add.
         add(center, BorderLayout.CENTER);
 
+        // Section: Handle the logic for refresh.
         refresh();
     }
 
+    // Section: Handle the logic for on clear.
     private void onClear() {
         boolean confirm = PlanSyncDialogs.confirm(
                 this,
@@ -95,9 +119,11 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
         if (!confirm) return;
 
         completedModel.clearAll();
+        // Section: Refresh or recompute the state used to list text.
         updateListText();
     }
 
+    // Section: Handle the logic for big button.
     private JButton bigButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
@@ -109,6 +135,7 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
         return b;
     }
 
+    // Section: Return the data used to width chars.
     private int getWidthChars() {
         int px = scroll.getViewport().getExtentSize().width;
         Insets in = taskArea.getInsets();
@@ -123,13 +150,16 @@ public class CompletedTasksView extends JPanel implements RefreshableView {
         return Math.max(40, chars);
     }
 
+    // Section: Refresh or recompute the state used to list text.
     private void updateListText() {
         taskArea.setText(completedModel.formatForDisplay(getWidthChars()));
         taskArea.setCaretPosition(0);
     }
 
     @Override
+    // Section: Handle the logic for refresh.
     public void refresh() {
+        // Section: Refresh or recompute the state used to list text.
         updateListText();
     }
 }

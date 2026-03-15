@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the HomeView part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 import model.PlanSyncActiveTasksModel;
 import model.PlanSyncRecurringTasksModel;
@@ -16,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import util.SymbolIcon;
+import util.SymbolIcon.Kind;
 
 public class HomeView extends JPanel implements RefreshableView {
 
@@ -45,13 +64,16 @@ public class HomeView extends JPanel implements RefreshableView {
     public HomeView(AppController controller) {
         this.controller = controller;
 
+        // Section: Update the state used to layout.
         setLayout(new BorderLayout());
+        // Section: Update the state used to opaque.
         setOpaque(true);
 
         JLabel title = new JLabel("P L A N S Y N C", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 30));
         title.putClientProperty("on_base", true);
         title.setBorder(BorderFactory.createEmptyBorder(18, 0, 10, 0));
+        // Section: Add the data or behavior needed to add.
         add(title, BorderLayout.NORTH);
 
         JPanel content = new JPanel();
@@ -67,6 +89,7 @@ public class HomeView extends JPanel implements RefreshableView {
         pageScroll.getViewport().setOpaque(false);
         pageScroll.getVerticalScrollBar().setUnitIncrement(16);
 
+        // Section: Add the data or behavior needed to add.
         add(pageScroll, BorderLayout.CENTER);
 
         RoundedPanel welcomePanel = new RoundedPanel(35);
@@ -141,15 +164,15 @@ public class HomeView extends JPanel implements RefreshableView {
         JPanel toolsGrid = new JPanel(new GridLayout(2, 4, 12, 12));
         toolsGrid.setOpaque(false);
 
-        toolsGrid.add(toolButton("⌛", "Timer", () -> controller.showView("TIMER")));
-        toolsGrid.add(toolButton("⏱", "Stopwatch", () -> controller.showView("STOPWATCH")));
-        toolsGrid.add(toolButton("Σ", "Time Calculator", () -> controller.showView("TIME_CALCULATOR")));
-        toolsGrid.add(toolButton("🗓", "Calendar", () -> controller.showView("CALENDAR")));
+        toolsGrid.add(toolButton(Kind.TIMER, "Timer", () -> controller.showView("TIMER")));
+        toolsGrid.add(toolButton(Kind.STOPWATCH, "Stopwatch", () -> controller.showView("STOPWATCH")));
+        toolsGrid.add(toolButton(Kind.CALCULATOR, "Time Calculator", () -> controller.showView("TIME_CALCULATOR")));
+        toolsGrid.add(toolButton(Kind.CALENDAR, "Calendar", () -> controller.showView("CALENDAR")));
 
-        toolsGrid.add(toolButton("+", "Add Active Task", () -> controller.showView("ADD_ACTIVE")));
-        toolsGrid.add(toolButton("✅", "Mark Task as Complete", () -> controller.showView("MARK_COMPLETED")));
-        toolsGrid.add(toolButton("🔁", "Add Recurring Task", () -> controller.showView("ADD_RECURRING")));
-        toolsGrid.add(toolButton("⚙", "Settings", () -> controller.showView("SETTINGS")));
+        toolsGrid.add(toolButton(Kind.ADD, "Add Active Task", () -> controller.showView("ADD_ACTIVE")));
+        toolsGrid.add(toolButton(Kind.CHECK, "Mark Task as Complete", () -> controller.showView("MARK_COMPLETED")));
+        toolsGrid.add(toolButton(Kind.RECURRING, "Add Recurring Task", () -> controller.showView("ADD_RECURRING")));
+        toolsGrid.add(toolButton(Kind.SETTINGS, "Settings", () -> controller.showView("SETTINGS")));
 
         toolsPanel.add(toolsGrid, BorderLayout.CENTER);
 
@@ -216,7 +239,9 @@ public class HomeView extends JPanel implements RefreshableView {
 
         activeScroll.getViewport().addComponentListener(new ComponentAdapter() {
             @Override
+            // Section: Handle the logic for component resized.
             public void componentResized(ComponentEvent e) {
+                // Section: Refresh or recompute the state used to active text.
                 updateActiveText();
             }
         });
@@ -272,7 +297,9 @@ public class HomeView extends JPanel implements RefreshableView {
 
         recurringScroll.getViewport().addComponentListener(new ComponentAdapter() {
             @Override
+            // Section: Handle the logic for component resized.
             public void componentResized(ComponentEvent e) {
+                // Section: Refresh or recompute the state used to recurring text.
                 updateRecurringText();
             }
         });
@@ -281,17 +308,20 @@ public class HomeView extends JPanel implements RefreshableView {
         content.add(recurringPanel);
     }
 
-    private JButton toolButton(String symbol, String tooltip, Runnable action) {
-        JButton b = new JButton(symbol);
+    // Section: Handle the logic for tool button.
+    private JButton toolButton(Kind iconKind, String tooltip, Runnable action) {
+        JButton b = new JButton();
         b.setToolTipText(tooltip);
         b.setFocusPainted(false);
-        b.setFont(new Font("SansSerif", Font.BOLD, 28));
         b.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         b.setPreferredSize(new Dimension(74, 64));
+        b.setMargin(new Insets(2, 2, 2, 2));
+        b.setIcon(new SymbolIcon(iconKind, 28));
         b.addActionListener(e -> action.run());
         return b;
     }
 
+    // Section: Handle the logic for small arrow toggle.
     private JToggleButton smallArrowToggle(String symbol, String tooltip) {
         JToggleButton b = new JToggleButton(symbol);
         b.setToolTipText(tooltip);
@@ -303,6 +333,7 @@ public class HomeView extends JPanel implements RefreshableView {
         return b;
     }
 
+    // Section: Handle the logic for start live clock.
     private void startLiveClock() {
         if (liveClockTimer != null) return;
         liveClockTimer = new Timer(1000, e -> updateClock());
@@ -310,6 +341,7 @@ public class HomeView extends JPanel implements RefreshableView {
         liveClockTimer.start();
     }
 
+    // Section: Handle the logic for stop live clock.
     private void stopLiveClock() {
         if (liveClockTimer != null) {
             liveClockTimer.stop();
@@ -317,12 +349,14 @@ public class HomeView extends JPanel implements RefreshableView {
         }
     }
 
+    // Section: Refresh or recompute the state used to clock.
     private void updateClock() {
         LocalDateTime now = LocalDateTime.now();
         timeLabel.setText(now.format(TIME_FMT));
         dateLabel.setText(now.toLocalDate().format(DATE_FMT));
     }
 
+    // Section: Refresh or recompute the state used to active text.
     private void updateActiveText() {
         PlanSyncActiveTasksModel model = controller.getActiveTasksModel();
         if (model == null) {
@@ -370,6 +404,7 @@ public class HomeView extends JPanel implements RefreshableView {
         activeArea.setCaretPosition(0);
     }
 
+    // Section: Handle the logic for format active row.
     private String formatActiveRow(int id, PlanSyncActiveTasksModel.Task t, LocalDate today) {
         long days = ChronoUnit.DAYS.between(today, t.deadline);
         String status = (days == 0)
@@ -387,6 +422,7 @@ public class HomeView extends JPanel implements RefreshableView {
                 + "]";
     }
 
+    // Section: Refresh or recompute the state used to recurring text.
     private void updateRecurringText() {
         PlanSyncRecurringTasksModel model = controller.getRecurringTasksModel();
         if (model == null) {
@@ -429,29 +465,39 @@ public class HomeView extends JPanel implements RefreshableView {
         recurringArea.setCaretPosition(0);
     }
 
+    // Section: Handle the logic for safe.
     private String safe(String s) {
         return s == null ? "" : s;
     }
 
     @Override
+    // Section: Handle the logic for refresh.
     public void refresh() {
         String name = controller.getSettings() != null ? controller.getSettings().getUsername() : "USERNAME";
         welcomeLabel.setText("WELCOME to PlanSync, " + name + "!");
 
+        // Section: Refresh or recompute the state used to clock.
         updateClock();
+        // Section: Refresh or recompute the state used to active text.
         updateActiveText();
+        // Section: Refresh or recompute the state used to recurring text.
         updateRecurringText();
     }
 
     @Override
+    // Section: Add the data or behavior needed to notify.
     public void addNotify() {
         super.addNotify();
+        // Section: Handle the logic for start live clock.
         startLiveClock();
+        // Section: Refresh or recompute the state used to clock.
         updateClock();
     }
 
     @Override
+    // Section: Handle the logic for remove notify.
     public void removeNotify() {
+        // Section: Handle the logic for stop live clock.
         stopLiveClock();
         super.removeNotify();
     }

@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the EditRecurringView part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 import components.PlanSyncDialogs;
 import model.PlanSyncRecurringTasksModel;
@@ -64,13 +81,16 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         this.controller = controller;
         this.recurringModel = recurringModel;
 
+        // Section: Update the state used to layout.
         setLayout(new BorderLayout());
+        // Section: Update the state used to opaque.
         setOpaque(true);
 
         JLabel title = new JLabel("E D I T   R E C U R R I N G   T A S K", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.putClientProperty("on_base", true);
         title.setBorder(BorderFactory.createEmptyBorder(25, 10, 10, 10));
+        // Section: Add the data or behavior needed to add.
         add(title, BorderLayout.NORTH);
 
         JPanel content = new JPanel();
@@ -86,6 +106,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         pageScroll.setOpaque(false);
         pageScroll.getViewport().setOpaque(false);
         pageScroll.getVerticalScrollBar().setUnitIncrement(16);
+        // Section: Add the data or behavior needed to add.
         add(pageScroll, BorderLayout.CENTER);
 
         JPanel listPanel = new RoundedPanel(35);
@@ -109,7 +130,9 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         listScroll.getVerticalScrollBar().setUnitIncrement(16);
         listScroll.getViewport().addComponentListener(new ComponentAdapter() {
             @Override
+            // Section: Handle the logic for component resized.
             public void componentResized(ComponentEvent e) {
+                // Section: Refresh or recompute the state used to list text.
                 updateListText();
             }
         });
@@ -267,12 +290,17 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         yearlyBtn.addActionListener(e -> setFrequency("YEARLY"));
 
         weeklyBtn.setSelected(true);
+        // Section: Update the state used to frequency.
         setFrequency("WEEKLY");
+        // Section: Refresh or recompute the state used to monthly days.
         updateMonthlyDays();
+        // Section: Refresh or recompute the state used to yearly days.
         updateYearlyDays();
+        // Section: Update the state used to editing enabled.
         setEditingEnabled(false);
     }
 
+    // Section: Build and return the elements needed to daily panel.
     private JPanel createDailyPanel(String[] times) {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.putClientProperty("themed_base", true);
@@ -298,6 +326,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return panel;
     }
 
+    // Section: Build and return the elements needed to weekly panel.
     private JPanel createWeeklyPanel(String[] times) {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.putClientProperty("themed_base", true);
@@ -342,6 +371,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return panel;
     }
 
+    // Section: Build and return the elements needed to monthly panel.
     private JPanel createMonthlyPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.putClientProperty("themed_base", true);
@@ -388,6 +418,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return panel;
     }
 
+    // Section: Build and return the elements needed to yearly panel.
     private JPanel createYearlyPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.putClientProperty("themed_base", true);
@@ -456,6 +487,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return panel;
     }
 
+    // Section: Handle the logic for bar constraints.
     private GridBagConstraints barConstraints() {
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(0, 0, 0, 18);
@@ -464,6 +496,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return gc;
     }
 
+    // Section: Handle the logic for editable time combo.
     private JComboBox<String> editableTimeCombo(String[] times) {
         JComboBox<String> combo = new JComboBox<>(times);
         combo.setFont(new Font("SansSerif", Font.BOLD, 16));
@@ -482,6 +515,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return combo;
     }
 
+    // Section: Update the state used to editing enabled.
     private void setEditingEnabled(boolean enabled) {
         nameField.setEnabled(enabled);
         descArea.setEnabled(enabled);
@@ -501,11 +535,13 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         yearlyStartYearCombo.setEnabled(enabled);
     }
 
+    // Section: Update the state used to frequency.
     private void setFrequency(String freq) {
         selectedFrequency = freq;
         frequencyCards.show(frequencyPanel, freq);
     }
 
+    // Section: Refresh or recompute the state used to monthly days.
     private void updateMonthlyDays() {
         int month = parseMonth(String.valueOf(monthlyMonthCombo.getSelectedItem()));
         String currentDay = getEditableComboValue(monthlyDayCombo);
@@ -519,6 +555,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         monthlyDayCombo.setSelectedItem(String.valueOf(day));
     }
 
+    // Section: Refresh or recompute the state used to yearly days.
     private void updateYearlyDays() {
         int year = parseYear(getEditableComboValue(yearlyStartYearCombo), LocalDate.now().getYear());
         int month = parseMonth(String.valueOf(yearlyMonthCombo.getSelectedItem()));
@@ -531,11 +568,13 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         yearlyDayCombo.setSelectedItem(String.valueOf(day));
     }
 
+    // Section: Handle the logic for on load.
     private void onLoad() {
         String raw = idField.getText().trim();
         int id;
         try {
             id = Integer.parseInt(raw);
+        // Section: Handle the logic for catch.
         } catch (NumberFormatException ex) {
             PlanSyncDialogs.alert(this, controller, "Invalid ID", "Please enter a valid numeric task ID.");
             return;
@@ -562,6 +601,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
             case "MONTHLY" -> monthlyBtn.setSelected(true);
             case "YEARLY" -> yearlyBtn.setSelected(true);
         }
+        // Section: Update the state used to frequency.
         setFrequency(freq);
 
         try {
@@ -583,6 +623,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
                     if (dm != null) {
                         int month = parseMonth(dm[1]);
                         monthlyMonthCombo.setSelectedItem(Month.of(month).name());
+                        // Section: Refresh or recompute the state used to monthly days.
                         updateMonthlyDays();
                         monthlyDayCombo.setSelectedItem(String.valueOf(Integer.parseInt(dm[0])));
                     }
@@ -597,19 +638,23 @@ public class EditRecurringView extends JPanel implements RefreshableView {
                     if (year != null && !year.isBlank()) {
                         yearlyStartYearCombo.setSelectedItem(Integer.parseInt(year));
                     }
+                    // Section: Refresh or recompute the state used to yearly days.
                     updateYearlyDays();
                     if (dm != null) {
                         yearlyDayCombo.setSelectedItem(String.valueOf(Integer.parseInt(dm[0])));
                     }
                 }
             }
+        // Section: Handle the logic for catch.
         } catch (Exception ignored) {
             // Leave the loaded values as best effort so the user can correct them.
         }
 
+        // Section: Update the state used to editing enabled.
         setEditingEnabled(true);
     }
 
+    // Section: Handle the logic for on save.
     private void onSave() {
         if (loadedId == null) {
             PlanSyncDialogs.alert(this, controller, "Nothing Loaded", "Load a task first (enter ID and press LOAD).");
@@ -720,15 +765,19 @@ public class EditRecurringView extends JPanel implements RefreshableView {
             recurringModel.updateTaskById(loadedId, name, desc, timeDate, selectedFrequency);
             controller.showRecurringTasks();
 
+        // Section: Handle the logic for catch.
         } catch (DateTimeParseException ex) {
             PlanSyncDialogs.alert(this, controller, "Invalid Input", "Invalid time format. Please use HH:mm.");
+        // Section: Handle the logic for catch.
         } catch (NumberFormatException ex) {
             PlanSyncDialogs.alert(this, controller, "Invalid Input", "Please enter valid numeric values.");
+        // Section: Handle the logic for catch.
         } catch (Exception ex) {
             PlanSyncDialogs.alert(this, controller, "Invalid Input", "Invalid date selection.");
         }
     }
 
+    // Section: Return the data used to committed editable combo value.
     private String getCommittedEditableComboValue(JComboBox<?> combo) {
         if (combo.isEditable()) {
             Object editorValue = combo.getEditor().getItem();
@@ -739,17 +788,20 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return value == null ? "" : value.toString().trim();
     }
 
+    // Section: Return the data used to editable combo value.
     private String getEditableComboValue(JComboBox<?> combo) {
         Object value = combo.isEditable() ? combo.getEditor().getItem() : combo.getSelectedItem();
         return value == null ? "" : value.toString().trim();
     }
 
+    // Section: Handle the logic for extract hhmm.
     private String extractHHmm(String s) {
         if (s == null) return "";
         Matcher m = Pattern.compile("(\\d{2}:\\d{2})").matcher(s);
         return m.find() ? m.group(1) : "";
     }
 
+    // Section: Handle the logic for extract weekly day.
     private String extractWeeklyDay(String s) {
         if (s == null) return null;
         String[] parts = s.trim().split("\\s+");
@@ -757,6 +809,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return null;
     }
 
+    // Section: Handle the logic for extract dm.
     private String[] extractDM(String s) {
         if (s == null) return null;
         Matcher m = Pattern.compile("^(\\d{2})/(\\d{2})").matcher(s.trim());
@@ -764,12 +817,14 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return new String[]{m.group(1), m.group(2)};
     }
 
+    // Section: Handle the logic for extract start year.
     private String extractStartYear(String s) {
         if (s == null) return null;
         Matcher m = Pattern.compile("\\(Start:\\s*(\\d{4})\\)").matcher(s);
         return m.find() ? m.group(1) : null;
     }
 
+    // Section: Handle the logic for section label.
     private JLabel sectionLabel(String text) {
         JLabel l = new JLabel(text, SwingConstants.CENTER);
         l.setFont(new Font("SansSerif", Font.BOLD, 18));
@@ -777,6 +832,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return l;
     }
 
+    // Section: Handle the logic for bar label.
     private JLabel barLabel(String text) {
         JLabel l = new JLabel(text);
         l.setFont(new Font("SansSerif", Font.BOLD, 18));
@@ -785,10 +841,12 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return l;
     }
 
+    // Section: Handle the logic for rounded field panel.
     private RoundedPanel roundedFieldPanel() {
         return roundedFieldPanel(null);
     }
 
+    // Section: Handle the logic for rounded field panel.
     private RoundedPanel roundedFieldPanel(Dimension preferredSize) {
         RoundedPanel p = new RoundedPanel(28);
         p.putClientProperty("themed", true);
@@ -800,6 +858,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return p;
     }
 
+    // Section: Handle the logic for pill toggle.
     private JToggleButton pillToggle(String text) {
         JToggleButton b = new JToggleButton(text);
         b.setFocusPainted(false);
@@ -809,6 +868,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return b;
     }
 
+    // Section: Handle the logic for big button.
     private JButton bigButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
@@ -818,6 +878,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return b;
     }
 
+    // Section: Return the data used to width chars.
     private int getWidthChars() {
         int px = listScroll.getViewport().getExtentSize().width;
         Insets in = taskArea.getInsets();
@@ -832,11 +893,13 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return Math.max(40, chars);
     }
 
+    // Section: Refresh or recompute the state used to list text.
     private void updateListText() {
         taskArea.setText(recurringModel.formatForDisplay(getWidthChars()));
         taskArea.setCaretPosition(0);
     }
 
+    // Section: Handle the logic for build time options.
     private static String[] buildTimeOptions() {
         List<String> out = new ArrayList<>();
         for (int h = 0; h < 24; h++) {
@@ -846,6 +909,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return out.toArray(new String[0]);
     }
 
+    // Section: Handle the logic for build month names.
     private static String[] buildMonthNames() {
         String[] out = new String[12];
         Month[] months = Month.values();
@@ -855,6 +919,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return out;
     }
 
+    // Section: Handle the logic for build day numbers for month.
     private static String[] buildDayNumbersForMonth(int month, int year) {
         int m = Math.max(1, Math.min(12, month));
         int y = Math.max(1900, year);
@@ -867,6 +932,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return days;
     }
 
+    // Section: Handle the logic for parse month.
     private static int parseMonth(String raw) {
         String s = raw == null ? "" : raw.trim();
         if (s.isEmpty()) return 1;
@@ -874,6 +940,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         try {
             int n = Integer.parseInt(s);
             if (n >= 1 && n <= 12) return n;
+        // Section: Handle the logic for catch.
         } catch (NumberFormatException ignored) {
         }
 
@@ -886,24 +953,29 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         return 1;
     }
 
+    // Section: Handle the logic for parse day.
     private static int parseDay(String raw, int max) {
         try {
             int d = Integer.parseInt(raw == null ? "" : raw.trim());
             if (d < 1) return 1;
             return Math.min(d, Math.max(1, max));
+        // Section: Handle the logic for catch.
         } catch (NumberFormatException e) {
             return 1;
         }
     }
 
+    // Section: Handle the logic for parse year.
     private static int parseYear(String raw, int fallback) {
         try {
             return Integer.parseInt(raw == null ? "" : raw.trim());
+        // Section: Handle the logic for catch.
         } catch (NumberFormatException e) {
             return fallback;
         }
     }
 
+    // Section: Report whether valid weekday.
     private static boolean isValidWeekday(String up) {
         if (up == null) return false;
         return switch (up) {
@@ -912,6 +984,7 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         };
     }
 
+    // Section: Handle the logic for build year options.
     private static Integer[] buildYearOptions() {
         int start = LocalDate.now().getYear();
         Integer[] years = new Integer[21];
@@ -922,7 +995,9 @@ public class EditRecurringView extends JPanel implements RefreshableView {
     }
 
     @Override
+    // Section: Handle the logic for refresh.
     public void refresh() {
+        // Section: Refresh or recompute the state used to list text.
         updateListText();
 
         idField.setText("");
@@ -935,18 +1010,22 @@ public class EditRecurringView extends JPanel implements RefreshableView {
         weeklyDayCombo.setSelectedIndex(0);
 
         monthlyMonthCombo.setSelectedIndex(0);
+        // Section: Refresh or recompute the state used to monthly days.
         updateMonthlyDays();
         monthlyDayCombo.setSelectedItem("1");
 
         yearlyMonthCombo.setSelectedIndex(0);
         yearlyStartYearCombo.setSelectedItem(LocalDate.now().getYear());
+        // Section: Refresh or recompute the state used to yearly days.
         updateYearlyDays();
         yearlyDayCombo.setSelectedItem("1");
 
         loadedId = null;
+        // Section: Update the state used to editing enabled.
         setEditingEnabled(false);
 
         weeklyBtn.setSelected(true);
+        // Section: Update the state used to frequency.
         setFrequency("WEEKLY");
     }
 }

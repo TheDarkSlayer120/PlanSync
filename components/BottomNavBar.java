@@ -1,5 +1,22 @@
 package components;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the BottomNavBar part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 
 import javax.swing.*;
@@ -19,10 +36,14 @@ public class BottomNavBar extends JPanel {
 
         this.controller = controller;
 
+        // Section: Update the state used to layout.
         setLayout(new GridLayout(1, 9, 8, 0));
+        // Section: Update the state used to preferred size.
         setPreferredSize(new Dimension(0, 70));
+        // Section: Update the state used to border.
         setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
 
+        // Section: Handle the logic for put client property.
         putClientProperty("themed", true);
 
         String[] labels = {
@@ -52,10 +73,12 @@ public class BottomNavBar extends JPanel {
         for (int i = 0; i < labels.length; i++) {
             JButton btn = createNavButton(labels[i], actions[i]);
             buttons.put(actions[i], btn);
+            // Section: Add the data or behavior needed to add.
             add(btn);
         }
     }
 
+    // Section: Build and return the elements needed to nav button.
     private JButton createNavButton(String text, String action) {
 
         JButton btn = new JButton(text);
@@ -77,6 +100,7 @@ public class BottomNavBar extends JPanel {
         return btn;
     }
 
+    // Section: Update the state used to active.
     public void setActive(String pageName) {
 
         if (activeButton != null) {

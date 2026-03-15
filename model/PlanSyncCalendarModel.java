@@ -1,5 +1,22 @@
 package model;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncCalendarModel part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -23,6 +40,7 @@ public class PlanSyncCalendarModel {
         private final boolean today;
         private final int activeTaskCount;
 
+        // Section: Handle the logic for day cell.
         private DayCell(LocalDate date, boolean inCurrentMonth, boolean today, int activeTaskCount) {
             this.date = date;
             this.inCurrentMonth = inCurrentMonth;
@@ -48,14 +66,17 @@ public class PlanSyncCalendarModel {
         this.selectedDate = LocalDate.now();
     }
 
+    // Section: Return the data used to current month.
     public YearMonth getCurrentMonth() {
         return currentMonth;
     }
 
+    // Section: Return the data used to selected date.
     public LocalDate getSelectedDate() {
         return selectedDate;
     }
 
+    // Section: Update the state used to selected date.
     public void setSelectedDate(LocalDate selectedDate) {
         if (selectedDate != null) {
             this.selectedDate = selectedDate;
@@ -63,10 +84,12 @@ public class PlanSyncCalendarModel {
         }
     }
 
+    // Section: Handle the logic for previous month.
     public void previousMonth() {
         currentMonth = currentMonth.minusMonths(1);
     }
 
+    // Section: Handle the logic for next month.
     public void nextMonth() {
         currentMonth = currentMonth.plusMonths(1);
     }
@@ -74,6 +97,7 @@ public class PlanSyncCalendarModel {
     /**
      * Builds a 42-cell (6 weeks) grid for the current month.
      */
+    // Section: Handle the logic for build month grid.
     public List<DayCell> buildMonthGrid() {
         LocalDate today = LocalDate.now();
 

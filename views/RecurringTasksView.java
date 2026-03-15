@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the RecurringTasksView part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 import model.PlanSyncRecurringTasksModel;
 
@@ -20,12 +37,14 @@ public class RecurringTasksView extends JPanel implements RefreshableView {
         this.controller = controller;
         this.recurringModel = recurringModel;
 
+        // Section: Update the state used to layout.
         setLayout(new BorderLayout());
 
         JLabel title = new JLabel("R E C U R R I N G   T A S K S", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.putClientProperty("on_base", true);
         title.setBorder(BorderFactory.createEmptyBorder(25, 10, 10, 10));
+        // Section: Add the data or behavior needed to add.
         add(title, BorderLayout.NORTH);
 
         RoundedPanel listPanel = new RoundedPanel(35);
@@ -46,7 +65,9 @@ public class RecurringTasksView extends JPanel implements RefreshableView {
         scroll.getViewport().setOpaque(false);
 
         scroll.getViewport().addComponentListener(new ComponentAdapter() {
+            // Section: Handle the logic for component resized.
             @Override public void componentResized(ComponentEvent e) {
+                // Section: Refresh or recompute the state used to list text.
                 updateListText();
             }
         });
@@ -79,11 +100,14 @@ public class RecurringTasksView extends JPanel implements RefreshableView {
         center.add(listPanel, BorderLayout.CENTER);
         center.add(buttons, BorderLayout.SOUTH);
 
+        // Section: Add the data or behavior needed to add.
         add(center, BorderLayout.CENTER);
 
+        // Section: Handle the logic for refresh.
         refresh();
     }
 
+    // Section: Handle the logic for big button.
     private JButton bigButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
@@ -99,6 +123,7 @@ public class RecurringTasksView extends JPanel implements RefreshableView {
         return b;
     }
 
+    // Section: Return the data used to width chars.
     private int getWidthChars() {
         int px = scroll.getViewport().getExtentSize().width;
         Insets in = taskArea.getInsets();
@@ -113,13 +138,16 @@ public class RecurringTasksView extends JPanel implements RefreshableView {
         return Math.max(40, chars);
     }
 
+    // Section: Refresh or recompute the state used to list text.
     private void updateListText() {
         taskArea.setText(recurringModel.formatForDisplay(getWidthChars()));
         taskArea.setCaretPosition(0);
     }
 
     @Override
+    // Section: Handle the logic for refresh.
     public void refresh() {
+        // Section: Refresh or recompute the state used to list text.
         updateListText();
     }
 }

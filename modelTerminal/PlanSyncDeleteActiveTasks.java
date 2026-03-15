@@ -1,9 +1,27 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncDeleteActiveTasks part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class PlanSyncDeleteActiveTasks {
 
+    // Section: Remove the items involved in active tasks.
     public static void deleteActiveTasks() {
 
         if (PlanSyncActiveTasks.activeTasks.isEmpty()) {
@@ -43,6 +61,7 @@ public class PlanSyncDeleteActiveTasks {
                         System.out.println("Invalid task number: " + s);
                     }
 
+                // Section: Handle the logic for catch.
                 } catch (NumberFormatException e) {
                     System.out.println("Invalid input (not a number): " + s);
                 }

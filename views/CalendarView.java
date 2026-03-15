@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the CalendarView part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import components.PlanSyncDialogs;
 import controller.AppController;
 import model.PlanSyncActiveTasksModel;
@@ -67,7 +84,9 @@ public class CalendarView extends JPanel implements RefreshableView {
         this.controller = controller;
         this.calendarModel = calendarModel;
 
+        // Section: Update the state used to layout.
         setLayout(new BorderLayout());
+        // Section: Handle the logic for put client property.
         putClientProperty("themed_base", true);
 
         // ===== Top title bar =====
@@ -93,12 +112,14 @@ public class CalendarView extends JPanel implements RefreshableView {
         top.add(Box.createVerticalStrut(6));
         top.add(liveDateTimeLabel);
 
+        // Section: Add the data or behavior needed to add.
         add(top, BorderLayout.NORTH);
 
         // ===== Center area that stretches =====
         JPanel content = new JPanel(new BorderLayout());
         content.putClientProperty("themed_base", true);
         content.setBorder(BorderFactory.createEmptyBorder(8, 22, 22, 22));
+        // Section: Add the data or behavior needed to add.
         add(content, BorderLayout.CENTER);
 
         RoundedPanel card = new RoundedPanel(30);
@@ -159,19 +180,24 @@ public class CalendarView extends JPanel implements RefreshableView {
         // ===== Wire navigation =====
         prevBtn.addActionListener(e -> {
             calendarModel.previousMonth();
+            // Section: Handle the logic for refresh.
             refresh();
         });
 
         nextBtn.addActionListener(e -> {
             calendarModel.nextMonth();
+            // Section: Handle the logic for refresh.
             refresh();
         });
 
+        // Section: Handle the logic for start live clock.
         startLiveClock();
+        // Section: Handle the logic for refresh.
         refresh();
     }
 
     // ===== Live clock helpers =====
+    // Section: Handle the logic for start live clock.
     private void startLiveClock() {
         if (liveClockTimer != null) return;
         liveClockTimer = new Timer(1000, e -> updateLiveDateTime());
@@ -179,6 +205,7 @@ public class CalendarView extends JPanel implements RefreshableView {
         liveClockTimer.start();
     }
 
+    // Section: Handle the logic for stop live clock.
     private void stopLiveClock() {
         if (liveClockTimer != null) {
             liveClockTimer.stop();
@@ -186,36 +213,49 @@ public class CalendarView extends JPanel implements RefreshableView {
         }
     }
 
+    // Section: Refresh or recompute the state used to live date time.
     private void updateLiveDateTime() {
         liveDateTimeLabel.setText(LocalDateTime.now().format(LIVE_DT_FMT));
     }
 
     @Override
+    // Section: Add the data or behavior needed to notify.
     public void addNotify() {
         super.addNotify();
+        // Section: Handle the logic for start live clock.
         startLiveClock();
+        // Section: Refresh or recompute the state used to live date time.
         updateLiveDateTime();
     }
 
     @Override
+    // Section: Handle the logic for remove notify.
     public void removeNotify() {
+        // Section: Handle the logic for stop live clock.
         stopLiveClock();
         super.removeNotify();
     }
 
     @Override
+    // Section: Handle the logic for refresh.
     public void refresh() {
+        // Section: Handle the logic for compute colors.
         computeColors();
 
         // Dark-mode friendly live date/time
         liveDateTimeLabel.setForeground(liveDateTimeFg);
+        // Section: Refresh or recompute the state used to live date time.
         updateLiveDateTime();
 
+        // Section: Handle the logic for render month.
         renderMonth();
+        // Section: Handle the logic for apply nav button style.
         applyNavButtonStyle(prevBtn);
+        // Section: Handle the logic for apply nav button style.
         applyNavButtonStyle(nextBtn);
     }
 
+    // Section: Handle the logic for render month.
     private void renderMonth() {
         YearMonth ym = calendarModel.getCurrentMonth();
         String monthName = ym.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH).toUpperCase();
@@ -276,10 +316,13 @@ public class CalendarView extends JPanel implements RefreshableView {
             }
         }
 
+        // Section: Handle the logic for revalidate.
         revalidate();
+        // Section: Handle the logic for repaint.
         repaint();
     }
 
+    // Section: Handle the logic for day button.
     private JButton dayButton() {
         JButton b = new JButton();
         b.setFocusPainted(false);
@@ -296,13 +339,16 @@ public class CalendarView extends JPanel implements RefreshableView {
 
             LocalDate date = (LocalDate) v;
             calendarModel.setSelectedDate(date);
+            // Section: Handle the logic for refresh.
             refresh();
+            // Section: Handle UI flow to tasks popup.
             showTasksPopup(date);
         });
 
         return b;
     }
 
+    // Section: Handle the logic for nav button.
     private JButton navButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
@@ -314,6 +360,7 @@ public class CalendarView extends JPanel implements RefreshableView {
         return b;
     }
 
+    // Section: Handle the logic for apply nav button style.
     private void applyNavButtonStyle(JButton b) {
         b.setBackground(navBg);
         b.setForeground(textOnDark);
@@ -336,6 +383,7 @@ public class CalendarView extends JPanel implements RefreshableView {
         @Override public void mouseExited(MouseEvent e) { btn.setBackground(navBg); }
     }
 
+    // Section: Handle UI flow to tasks popup.
     private void showTasksPopup(LocalDate date) {
         PlanSyncActiveTasksModel active = controller.getActiveTasksModel();
         List<PlanSyncActiveTasksModel.Task> tasks = active.getTasksForDate(date);
@@ -363,6 +411,7 @@ public class CalendarView extends JPanel implements RefreshableView {
         if (go) controller.showActiveTasks();
     }
 
+    // Section: Handle the logic for compute colors.
     private void computeColors() {
         PlanSyncSettings settings = controller.getSettings();
         Theme theme = settings.getSelectedTheme();
@@ -386,6 +435,7 @@ public class CalendarView extends JPanel implements RefreshableView {
         liveDateTimeFg = darkMode ? Color.WHITE : Color.BLACK;
     }
 
+    // Section: Handle the logic for blend.
     private static Color blend(Color a, Color b, double t) {
         t = Math.max(0, Math.min(1, t));
         int r = (int) Math.round(a.getRed() * (1 - t) + b.getRed() * t);
@@ -394,6 +444,7 @@ public class CalendarView extends JPanel implements RefreshableView {
         return new Color(clamp(r), clamp(g), clamp(bl));
     }
 
+    // Section: Handle the logic for darken.
     private static Color darken(Color c, double amount) {
         amount = Math.max(0, Math.min(1, amount));
         int r = (int) Math.round(c.getRed() * (1 - amount));
@@ -402,10 +453,12 @@ public class CalendarView extends JPanel implements RefreshableView {
         return new Color(clamp(r), clamp(g), clamp(b));
     }
 
+    // Section: Handle the logic for clamp.
     private static int clamp(int v) {
         return Math.max(0, Math.min(255, v));
     }
 
+    // Section: Handle the logic for default rounded border.
     private static Border defaultRoundedBorder(int thickness, Color c) {
         return new LineBorder(c, thickness, true);
     }

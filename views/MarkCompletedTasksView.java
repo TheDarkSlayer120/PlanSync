@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the MarkCompletedTasksView part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 import components.PlanSyncDialogs;
 import model.PlanSyncActiveTasksModel;
@@ -31,12 +48,14 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
         this.activeModel = activeModel;
         this.completedModel = completedModel;
 
+        // Section: Update the state used to layout.
         setLayout(new BorderLayout());
 
         JLabel title = new JLabel("M A R K   C O M P L E T E D   T A S K", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.putClientProperty("on_base", true);
         title.setBorder(BorderFactory.createEmptyBorder(25, 10, 10, 10));
+        // Section: Add the data or behavior needed to add.
         add(title, BorderLayout.NORTH);
 
         JPanel center = new JPanel(new BorderLayout(0, 18));
@@ -61,7 +80,9 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
         scroll.getViewport().setOpaque(false);
 
         scroll.getViewport().addComponentListener(new ComponentAdapter() {
+            // Section: Handle the logic for component resized.
             @Override public void componentResized(ComponentEvent e) {
+                // Section: Refresh or recompute the state used to list text preserve input.
                 updateListTextPreserveInput();
             }
         });
@@ -91,6 +112,7 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
         inputRow.add(fieldWrap, BorderLayout.CENTER);
 
         center.add(inputRow, BorderLayout.SOUTH);
+        // Section: Add the data or behavior needed to add.
         add(center, BorderLayout.CENTER);
 
         JPanel buttons = new JPanel(new GridLayout(1, 2, 35, 0));
@@ -105,9 +127,11 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
 
         buttons.add(cancel);
         buttons.add(complete);
+        // Section: Add the data or behavior needed to add.
         add(buttons, BorderLayout.SOUTH);
     }
 
+    // Section: Handle the logic for big button.
     private JButton bigButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
@@ -117,6 +141,7 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
         return b;
     }
 
+    // Section: Return the data used to width chars.
     private int getWidthChars() {
         int px = scroll.getViewport().getExtentSize().width;
         Insets in = taskArea.getInsets();
@@ -131,6 +156,7 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
         return Math.max(40, chars);
     }
 
+    // Section: Refresh or recompute the state used to list text preserve input.
     private void updateListTextPreserveInput() {
         String keep = selectionField.getText();
         taskArea.setText(activeModel.formatForDisplay(getWidthChars()));
@@ -138,6 +164,7 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
         selectionField.setText(keep);
     }
 
+    // Section: Handle the logic for on mark complete.
     private void onMarkComplete() {
         List<Integer> indexes = parseSelections(selectionField.getText());
         if (indexes.isEmpty()) {
@@ -158,6 +185,7 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
         controller.showActiveTasks();
     }
 
+    // Section: Handle the logic for parse selections.
     private List<Integer> parseSelections(String input) {
         input = input == null ? "" : input.trim();
         if (input.isEmpty()) return List.of();
@@ -177,6 +205,7 @@ public class MarkCompletedTasksView extends JPanel implements RefreshableView {
     }
 
     @Override
+    // Section: Handle the logic for refresh.
     public void refresh() {
         taskArea.setText(activeModel.formatForDisplay(getWidthChars()));
         taskArea.setCaretPosition(0);

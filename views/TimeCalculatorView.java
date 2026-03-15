@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the TimeCalculatorView part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 import model.PlanSyncTimeCalculator;
 
@@ -43,14 +60,20 @@ public class TimeCalculatorView extends JPanel {
         this.controller = controller;
         this.calculator = new PlanSyncTimeCalculator();
 
+        // Section: Update the state used to layout.
         setLayout(new BorderLayout());
+        // Section: Update the state used to opaque.
         setOpaque(true);
+        // Section: Update the state used to background.
         setBackground(Color.WHITE);
 
+        // Section: Add the data or behavior needed to add.
         add(buildHeader(), BorderLayout.NORTH);
+        // Section: Add the data or behavior needed to add.
         add(buildMain(), BorderLayout.CENTER);
     }
 
+    // Section: Handle the logic for build header.
     private JComponent buildHeader() {
         JPanel header = new JPanel();
         header.setOpaque(false);
@@ -67,6 +90,7 @@ public class TimeCalculatorView extends JPanel {
         return header;
     }
 
+    // Section: Handle the logic for build main.
     private JComponent buildMain() {
         JPanel outer = new JPanel(new BorderLayout());
         outer.setBorder(new EmptyBorder(10, 70, 20, 70));
@@ -90,15 +114,18 @@ public class TimeCalculatorView extends JPanel {
 
     /* ========================= COMMON STYLING ========================= */
 
+    // Section: Handle the logic for style section title.
     private void styleSectionTitle(JLabel label) {
         label.setFont(new Font("SansSerif", Font.BOLD, 18));
         label.setHorizontalAlignment(SwingConstants.CENTER);
     }
 
+    // Section: Handle the logic for style small label.
     private void styleSmallLabel(JLabel label) {
         label.setFont(new Font("SansSerif", Font.BOLD, 13));
     }
 
+    // Section: Build and return the elements needed to pill field.
     private JTextField createPillField(String text, int columns) {
         JTextField field = new JTextField(text, columns);
         field.setHorizontalAlignment(SwingConstants.CENTER);
@@ -118,6 +145,7 @@ public class TimeCalculatorView extends JPanel {
         return field;
     }
 
+    // Section: Build and return the elements needed to pill result label.
     private JLabel createPillResultLabel(String text) {
         JLabel label = new JLabel(text, SwingConstants.CENTER);
         label.setFont(new Font("SansSerif", Font.BOLD, 16));
@@ -126,6 +154,7 @@ public class TimeCalculatorView extends JPanel {
         return label;
     }
 
+    // Section: Handle the logic for simple live update.
     private DocumentListener simpleLiveUpdate(Runnable r) {
         return new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { r.run(); }
@@ -136,6 +165,7 @@ public class TimeCalculatorView extends JPanel {
 
     /* ========================= SECTION 1 ========================= */
 
+    // Section: Handle the logic for build duration from now panel.
     private JComponent buildDurationFromNowPanel() {
         RoundedPanel panel = new RoundedPanel(35);
         panel.putClientProperty("themed", true);
@@ -144,6 +174,7 @@ public class TimeCalculatorView extends JPanel {
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
 
         JLabel sectionTitle = new JLabel("D U R A T I O N   F R O M   N O W", SwingConstants.CENTER);
+        // Section: Handle the logic for style section title.
         styleSectionTitle(sectionTitle);
 
         JPanel titleWrap = new JPanel(new BorderLayout());
@@ -157,6 +188,7 @@ public class TimeCalculatorView extends JPanel {
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
 
         JLabel hint = new JLabel("DURATION (e.g. 1 DAY 2 HOUR 30 MINUTES):");
+        // Section: Handle the logic for style small label.
         styleSmallLabel(hint);
         hint.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -187,15 +219,18 @@ public class TimeCalculatorView extends JPanel {
                 simpleLiveUpdate(this::tryPreviewFromNow)
         );
 
+        // Section: Handle the logic for try preview from now.
         tryPreviewFromNow();
         return panel;
     }
 
+    // Section: Handle the logic for try preview from now.
     private void tryPreviewFromNow() {
         try {
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime result = calculator.addDurationFrom(now, durationFromNowField.getText());
             durationFromNowResult.setText(calculator.formatDateTime(result));
+        // Section: Handle the logic for catch.
         } catch (Exception ignored) {
             durationFromNowResult.setText("—");
         }
@@ -203,6 +238,7 @@ public class TimeCalculatorView extends JPanel {
 
     /* ========================= SECTION 2 ========================= */
 
+    // Section: Handle the logic for build duration between times panel.
     private JComponent buildDurationBetweenTimesPanel() {
         RoundedPanel panel = new RoundedPanel(35);
         panel.putClientProperty("themed", true);
@@ -211,6 +247,7 @@ public class TimeCalculatorView extends JPanel {
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
 
         JLabel sectionTitle = new JLabel("D U R A T I O N   B E T W E E N   T I M E S", SwingConstants.CENTER);
+        // Section: Handle the logic for style section title.
         styleSectionTitle(sectionTitle);
 
         JPanel titleWrap = new JPanel(new BorderLayout());
@@ -224,6 +261,7 @@ public class TimeCalculatorView extends JPanel {
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
 
         JLabel hint = new JLabel("START AND END TIME (HH:MM):");
+        // Section: Handle the logic for style small label.
         styleSmallLabel(hint);
         hint.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -262,14 +300,17 @@ public class TimeCalculatorView extends JPanel {
         startTimeField.getDocument().addDocumentListener(dl);
         endTimeField.getDocument().addDocumentListener(dl);
 
+        // Section: Handle the logic for try preview between times.
         tryPreviewBetweenTimes();
         return panel;
     }
 
+    // Section: Handle the logic for try preview between times.
     private void tryPreviewBetweenTimes() {
         try {
             var res = calculator.durationBetweenTimes(startTimeField.getText(), endTimeField.getText());
             betweenTimesResult.setText(res.toDisplayString());
+        // Section: Handle the logic for catch.
         } catch (Exception ignored) {
             betweenTimesResult.setText("—");
         }
@@ -277,6 +318,7 @@ public class TimeCalculatorView extends JPanel {
 
     /* ========================= SECTION 3 ========================= */
 
+    // Section: Handle the logic for build duration between dates panel.
     private JComponent buildDurationBetweenDatesPanel() {
         RoundedPanel panel = new RoundedPanel(35);
         panel.putClientProperty("themed", true);
@@ -285,6 +327,7 @@ public class TimeCalculatorView extends JPanel {
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 260));
 
         JLabel sectionTitle = new JLabel("D U R A T I O N   B E T W E E N   D A T E S", SwingConstants.CENTER);
+        // Section: Handle the logic for style section title.
         styleSectionTitle(sectionTitle);
 
         JPanel titleWrap = new JPanel(new BorderLayout());
@@ -304,12 +347,14 @@ public class TimeCalculatorView extends JPanel {
         dateBox.setMaximumSize(new Dimension(340, 9999));
 
         JLabel startLabel = new JLabel("START DATE (DD/MM/YYYY):");
+        // Section: Handle the logic for style small label.
         styleSmallLabel(startLabel);
         startLabel.setForeground(FIXED_BLACK);
 
         startDateField = createPillField("01/01/2026", 10);
 
         JLabel endLabel = new JLabel("END DATE (DD/MM/YYYY):");
+        // Section: Handle the logic for style small label.
         styleSmallLabel(endLabel);
         endLabel.setForeground(FIXED_BLACK);
 
@@ -399,21 +444,25 @@ public class TimeCalculatorView extends JPanel {
         startDateField.getDocument().addDocumentListener(dl);
         endDateField.getDocument().addDocumentListener(dl);
 
+        // Section: Handle the logic for try preview between dates.
         tryPreviewBetweenDates();
         return panel;
     }
 
+    // Section: Handle the logic for try preview between dates.
     private void tryPreviewBetweenDates() {
         try {
             LocalDate start = calculator.parseDate(startDateField.getText());
             LocalDate end = calculator.parseDate(endDateField.getText());
             var type = getSelectedDateOutputType();
             betweenDatesResultArea.setText(calculator.durationBetweenDatesDisplay(start, end, type));
+        // Section: Handle the logic for catch.
         } catch (Exception ignored) {
             betweenDatesResultArea.setText("—");
         }
     }
 
+    // Section: Return the data used to selected date output type.
     private PlanSyncTimeCalculator.DateOutputType getSelectedDateOutputType() {
         if (daysOnlyBtn.isSelected()) return PlanSyncTimeCalculator.DateOutputType.DAYS_ONLY;
         if (weeksOnlyBtn.isSelected()) return PlanSyncTimeCalculator.DateOutputType.WEEKS_ONLY;
@@ -424,6 +473,7 @@ public class TimeCalculatorView extends JPanel {
 
     /* ========================= ALWAYS-WHITE PILL WRAPPER ========================= */
 
+    // Section: Handle the logic for wrap as fixed white pill.
     private JComponent wrapAsFixedWhitePill(JComponent inner) {
         FixedWhiteRoundedPanel pill = new FixedWhiteRoundedPanel(18);
         pill.setLayout(new BorderLayout());
@@ -439,12 +489,15 @@ public class TimeCalculatorView extends JPanel {
         private final int strokeWidth = 2;
         private final Color strokeColor = new Color(190, 190, 190);
 
+        // Section: Handle the logic for fixed white rounded panel.
         FixedWhiteRoundedPanel(int radius) {
             this.radius = radius;
+            // Section: Update the state used to opaque.
             setOpaque(false);
         }
 
         @Override
+        // Section: Handle the logic for paint component.
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
 

@@ -1,4 +1,21 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncAddRecurringTask part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -12,6 +29,7 @@ public class PlanSyncAddRecurringTask {
     private static final DateTimeFormatter DATE_FMT =
             DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+    // Section: Add the data or behavior needed to recurring task.
     public static void addRecurringTask() {
 
         System.out.println("\n--- ADD NEW RECURRING TASK ---\n");
@@ -54,6 +72,7 @@ public class PlanSyncAddRecurringTask {
                     if (time == null) return;
 
                     timeDate = time.format(TIME_FMT);
+                    // Section: Handle the logic for finish.
                     finish(name, description, timeDate, frequency);
                     return;
                 }
@@ -77,6 +96,7 @@ public class PlanSyncAddRecurringTask {
                     }
 
                     timeDate = time.format(TIME_FMT) + " " + day;
+                    // Section: Handle the logic for finish.
                     finish(name, description, timeDate, frequency);
                     return;
                 }
@@ -127,11 +147,14 @@ public class PlanSyncAddRecurringTask {
 
                             timeDate = String.format("%02d/%02d (Start Month: %02d)", day, month, month);
 
+                            // Section: Handle the logic for finish.
                             finish(name, description, timeDate, frequency);
                             return;
 
+                        // Section: Handle the logic for catch.
                         } catch (NumberFormatException e) {
                             System.out.println("Invalid number input.");
+                        // Section: Handle the logic for catch.
                         } catch (DateTimeParseException e) {
                             System.out.println("Invalid date.");
                         }
@@ -177,8 +200,10 @@ public class PlanSyncAddRecurringTask {
                                     timeDate, frequency);
                             return;
 
+                        // Section: Handle the logic for catch.
                         } catch (DateTimeParseException e) {
                             System.out.println("Invalid date.");
+                        // Section: Handle the logic for catch.
                         } catch (NumberFormatException e) {
                             System.out.println("Invalid year.");
                         }
@@ -192,6 +217,7 @@ public class PlanSyncAddRecurringTask {
 
     /* ================= HELPER: TIME INPUT ================= */
 
+    // Section: Handle the logic for prompt for time.
     private static LocalTime promptForTime() {
 
         while (true) {
@@ -206,6 +232,7 @@ public class PlanSyncAddRecurringTask {
 
             try {
                 return LocalTime.parse(input, TIME_FMT);
+            // Section: Handle the logic for catch.
             } catch (DateTimeParseException e) {
                 System.out.println("Invalid time format.");
             }

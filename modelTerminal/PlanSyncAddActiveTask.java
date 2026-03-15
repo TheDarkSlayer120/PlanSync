@@ -1,9 +1,27 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncAddActiveTask part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
 public class PlanSyncAddActiveTask {
 
+    // Section: Add the data or behavior needed to active task.
     public static void addActiveTask() {
 
         System.out.println("\n--- ADD NEW ACTIVE TASK ---\n");
@@ -33,6 +51,7 @@ public class PlanSyncAddActiveTask {
                 );
                 break; // valid date, exit loop
 
+            // Section: Handle the logic for catch.
             } catch (DateTimeParseException e) {
                 System.out.println("Invalid date format. Please use DD/MM/YYYY.");
             }

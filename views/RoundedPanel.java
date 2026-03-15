@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the RoundedPanel part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -13,10 +30,12 @@ public class RoundedPanel extends JPanel {
 
     public RoundedPanel(int radius) {
         this.radius = radius;
+        // Section: Update the state used to opaque.
         setOpaque(false);
     }
 
     @Override
+    // Section: Handle the logic for paint component.
     protected void paintComponent(Graphics g) {
 
         Graphics2D g2 = (Graphics2D) g.create();

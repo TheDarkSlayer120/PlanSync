@@ -1,4 +1,21 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncCalendar part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -10,8 +27,10 @@ public class PlanSyncCalendar {
 
     private static YearMonth currentMonth = YearMonth.now();
 
+    // Section: Handle the logic for run.
     public static Navigation run() {
         while (true) {
+            // Section: Handle the logic for print calendar.
             printCalendar();
             
             System.out.print("\nChoose option: ");
@@ -37,6 +56,7 @@ public class PlanSyncCalendar {
         }
     }
 
+    // Section: Handle the logic for print calendar.
     private static void printCalendar() {
         // Header menu
         System.out.println("\n--- CALENDAR ---");
@@ -65,9 +85,11 @@ public class PlanSyncCalendar {
         System.out.println("--------------------------------------------------------");
 
         // Calendar grid
+        // Section: Handle the logic for print calendar grid.
         printCalendarGrid();
     }
 
+    // Section: Handle the logic for print calendar grid.
     private static void printCalendarGrid() {
         LocalDate today = LocalDate.now(); // Get today's date
         LocalDate firstDay = currentMonth.atDay(1);
@@ -123,6 +145,7 @@ public class PlanSyncCalendar {
         }
     }
 
+    // Section: Handle the logic for display time.
     private static void displayTime() {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");

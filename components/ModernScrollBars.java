@@ -1,5 +1,22 @@
 package components;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the ModernScrollBars part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.*;
@@ -8,8 +25,12 @@ public final class ModernScrollBars {
 
     private ModernScrollBars() {}
 
+    // Section: Handle the logic for apply.
     public static void apply(JScrollPane sp, boolean darkMode, Color accent) {
         if (sp == null) return;
+
+        sp.setWheelScrollingEnabled(true);
+        sp.putClientProperty("JScrollPane.fastWheelScrolling", Boolean.TRUE);
 
         JScrollBar vsb = sp.getVerticalScrollBar();
         JScrollBar hsb = sp.getHorizontalScrollBar();
@@ -21,14 +42,16 @@ public final class ModernScrollBars {
         sp.setCorner(JScrollPane.LOWER_RIGHT_CORNER, new JPanel());
     }
 
+    // Section: Handle the logic for style bar.
     private static void styleBar(JScrollBar bar, boolean darkMode, Color accent, boolean vertical) {
         bar.setOpaque(false);
-        bar.setUnitIncrement(18);
-        bar.setBlockIncrement(80);
+        bar.setUnitIncrement(24);
+        bar.setBlockIncrement(96);
 
         // Slim, modern thickness
         bar.setPreferredSize(vertical
                 ? new Dimension(10, Integer.MAX_VALUE)
+                // Section: Handle the logic for dimension.
                 : new Dimension(Integer.MAX_VALUE, 10));
 
         Color thumb = (accent != null)
@@ -47,6 +70,7 @@ public final class ModernScrollBars {
             @Override protected JButton createDecreaseButton(int orientation) { return zeroButton(); }
             @Override protected JButton createIncreaseButton(int orientation) { return zeroButton(); }
 
+            // Section: Handle the logic for zero button.
             private JButton zeroButton() {
                 JButton b = new JButton();
                 b.setPreferredSize(new Dimension(0, 0));
@@ -59,6 +83,7 @@ public final class ModernScrollBars {
             }
 
             @Override
+            // Section: Handle the logic for paint track.
             protected void paintTrack(Graphics g, JComponent c, Rectangle r) {
                 Color t = (Color) bar.getClientProperty("modern.track");
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -68,6 +93,7 @@ public final class ModernScrollBars {
             }
 
             @Override
+            // Section: Handle the logic for paint thumb.
             protected void paintThumb(Graphics g, JComponent c, Rectangle r) {
                 if (r.isEmpty() || !bar.isEnabled()) return;
 

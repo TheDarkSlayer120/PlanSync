@@ -1,13 +1,31 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncActiveTasks part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import util.AppPaths;
 
 public class PlanSyncActiveTasks {
 
-    private static final String ACTIVE_FILE = "active_tasks.txt";
+    private static final String ACTIVE_FILE = AppPaths.getDataFile("active_tasks.txt").getPath();
 
     public static ArrayList<Task> activeTasks = new ArrayList<>();
     public static DateTimeFormatter formatter =
@@ -18,6 +36,7 @@ public class PlanSyncActiveTasks {
         String description;
         LocalDate deadline;
 
+        // Section: Handle the logic for task.
         public Task(String name, String description, LocalDate deadline) {
             this.name = name;
             this.description = description;
@@ -25,12 +44,14 @@ public class PlanSyncActiveTasks {
         }
     }
 
+    // Section: Handle the logic for run.
     public static Navigation run() {
 
         loadActive(); // 🔥 Load tasks when entering
 
         while (true) {
 
+            // Section: Handle the logic for display active tasks.
             displayActiveTasks();
 
             System.out.println("1. Display Active Tasks");
@@ -59,30 +80,38 @@ public class PlanSyncActiveTasks {
                     PlanSyncDeleteActiveTasks.deleteActiveTasks();
                     break;
                 case "5":
+                    // Section: Persist the data used to active.
                     saveActive();
                     return Navigation.RECURRING_TASKS;
                 case "6":
+                    // Section: Persist the data used to active.
                     saveActive();
                     return Navigation.COMPLETED_TASKS;
                 case "7":
+                    // Section: Persist the data used to active.
                     saveActive();
                     return Navigation.TIMER;
                 case "8":
+                    // Section: Persist the data used to active.
                     saveActive();
                     return Navigation.STOPWATCH;
                 case "9":
+                    // Section: Persist the data used to active.
                     saveActive();
                     return Navigation.TIME_CALCULATOR;
                 case "10":
+                    // Section: Persist the data used to active.
                     saveActive();
                     return Navigation.CALENDAR;
                 case "0":
+                    // Section: Persist the data used to active.
                     saveActive();
                     return Navigation.MAIN;
             }
         }
     }
 
+    // Section: Handle the logic for display active tasks.
     public static void displayActiveTasks() {
 
         System.out.println("\n--- ACTIVE TASKS ---");
@@ -124,6 +153,7 @@ public class PlanSyncActiveTasks {
 
     /* ================= FILE HANDLING ================= */
 
+    // Section: Persist the data used to active.
     public static void saveActive() {
 
         try (BufferedWriter bw =
@@ -138,12 +168,14 @@ public class PlanSyncActiveTasks {
                 bw.newLine();
             }
 
+        // Section: Handle the logic for catch.
         } catch (IOException e) {
             System.out.println("Error saving active tasks: "
                     + e.getMessage());
         }
     }
 
+    // Section: Read and prepare the data used to active.
     public static void loadActive() {
 
         activeTasks.clear();
@@ -173,6 +205,7 @@ public class PlanSyncActiveTasks {
                 );
             }
 
+        // Section: Handle the logic for catch.
         } catch (IOException e) {
             System.out.println("Error loading active tasks: "
                     + e.getMessage());

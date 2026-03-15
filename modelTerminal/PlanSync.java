@@ -1,6 +1,24 @@
 package modelTerminal;
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSync part of PlanSync and documents the main responsibilities of the file.
+ */
+
 public class PlanSync {
 
+    // Section: Launch the PlanSync entry flow for this file.
     public static void main(String[] args) {
         Navigation current = Navigation.MAIN;
 
@@ -22,6 +40,7 @@ public class PlanSync {
         System.out.println("\n");
     }
 
+    // Section: Handle the logic for main menu.
     private static Navigation mainMenu() {
         System.out.println("\n=== PLANSYNC ===");
         System.out.println("1. Timer");

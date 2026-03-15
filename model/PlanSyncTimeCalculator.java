@@ -1,5 +1,22 @@
 package model;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the PlanSyncTimeCalculator part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,11 +43,13 @@ public class PlanSyncTimeCalculator {
         public final long hours;
         public final long minutes;
 
+        // Section: Handle the logic for time diff result.
         public TimeDiffResult(long hours, long minutes) {
             this.hours = hours;
             this.minutes = minutes;
         }
 
+        // Section: Handle the logic for to display string.
         public String toDisplayString() {
             return String.format(
                     "%d HOUR%s %d MINUTE%s",
@@ -47,6 +66,7 @@ public class PlanSyncTimeCalculator {
         public final long days;
         public final long hours;
 
+        // Section: Handle the logic for date diff result.
         public DateDiffResult(long years, long months, long weeks, long days, long hours) {
             this.years = years;
             this.months = months;
@@ -63,6 +83,7 @@ public class PlanSyncTimeCalculator {
      * "1 Day 2 Hours 30 Minutes", "3 months", "1year 2days", etc.
      * Returns the resulting LocalDateTime from the provided base (usually LocalDateTime.now()).
      */
+    // Section: Add the data or behavior needed to duration from.
     public LocalDateTime addDurationFrom(LocalDateTime base, String input) {
         if (base == null) throw new IllegalArgumentException("Base time cannot be null.");
         if (input == null) throw new IllegalArgumentException("Duration input cannot be null.");
@@ -98,6 +119,7 @@ public class PlanSyncTimeCalculator {
         return result;
     }
 
+    // Section: Handle the logic for format date time.
     public String formatDateTime(LocalDateTime dateTime) {
         if (dateTime == null) return "";
         return dateTime.format(DATE_TIME_OUTPUT);
@@ -105,6 +127,7 @@ public class PlanSyncTimeCalculator {
 
     /* ================= 2) DURATION BETWEEN TIMES ================= */
 
+    // Section: Report whether valid time.
     public boolean isValidTime(String timeStr) {
         try {
             if (timeStr == null) return false;
@@ -115,6 +138,7 @@ public class PlanSyncTimeCalculator {
             int minute = Integer.parseInt(parts[1]);
 
             return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+        // Section: Handle the logic for catch.
         } catch (NumberFormatException e) {
             return false;
         }
@@ -124,6 +148,7 @@ public class PlanSyncTimeCalculator {
      * Computes duration between two HH:MM times.
      * If end < start, assumes the end is on the next day (same logic as terminal version).
      */
+    // Section: Handle the logic for duration between times.
     public TimeDiffResult durationBetweenTimes(String startHHMM, String endHHMM) {
         if (!isValidTime(startHHMM) || !isValidTime(endHHMM)) {
             throw new IllegalArgumentException("Invalid time. Use HH:MM (00-23:00-59).");
@@ -156,16 +181,19 @@ public class PlanSyncTimeCalculator {
 
     /* ================= 3) DURATION BETWEEN DATES ================= */
 
+    // Section: Report whether valid date.
     public boolean isValidDate(String dateStr) {
         try {
             if (dateStr == null) return false;
             LocalDate.parse(dateStr.trim(), DATE_FORMAT);
             return true;
+        // Section: Handle the logic for catch.
         } catch (Exception e) {
             return false;
         }
     }
 
+    // Section: Handle the logic for parse date.
     public LocalDate parseDate(String dateStr) {
         if (!isValidDate(dateStr)) {
             throw new IllegalArgumentException("Invalid date. Use DD/MM/YYYY.");
@@ -173,6 +201,7 @@ public class PlanSyncTimeCalculator {
         return LocalDate.parse(dateStr.trim(), DATE_FORMAT);
     }
 
+    // Section: Handle the logic for duration between dates display.
     public String durationBetweenDatesDisplay(LocalDate start, LocalDate end, DateOutputType type) {
         if (start == null || end == null) throw new IllegalArgumentException("Dates cannot be null.");
         if (end.isBefore(start)) throw new IllegalArgumentException("End date must be after start date.");
@@ -191,6 +220,7 @@ public class PlanSyncTimeCalculator {
         };
     }
 
+    // Section: Handle the logic for build parallel breakdown.
     private String buildParallelBreakdown(LocalDate start, LocalDate end) {
         long years = ChronoUnit.YEARS.between(start, end);
         long months = ChronoUnit.MONTHS.between(start, end);

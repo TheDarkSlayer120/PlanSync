@@ -1,5 +1,22 @@
 package views;
 
+
+/*
+ *  ██████╗ ██╗      █████╗ ███╗   ██╗███████╗██╗   ██╗███╗   ██╗ ██████╗
+ *  ██╔══██╗██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝████╗  ██║██╔════╝
+ *  ██████╔╝██║     ███████║██╔██╗ ██║███████╗ ╚████╔╝ ██╔██╗ ██║██║     
+ *  ██╔═══╝ ██║     ██╔══██║██║╚██╗██║╚════██║  ╚██╔╝  ██║╚██╗██║██║     
+ *  ██║     ███████╗██║  ██║██║ ╚████║███████║   ██║   ██║ ╚████║╚██████╗
+ *  ╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
+ *
+ *  PlanSync source guide
+ *  - This file includes a short header describing the class or interface purpose.
+ *  - Method comments mark the responsibility of each section so the flow is easier to follow.
+ */
+/**
+ * File purpose: This class supports the ActiveTasksView part of PlanSync and documents the main responsibilities of the file.
+ */
+
 import controller.AppController;
 import model.PlanSyncActiveTasksModel;
 
@@ -28,12 +45,14 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         this.controller = controller;
         this.activeModel = activeModel;
 
+        // Section: Update the state used to layout.
         setLayout(new BorderLayout());
 
         JLabel title = new JLabel("A C T I V E   T A S K S", SwingConstants.CENTER);
         title.setFont(new Font("SansSerif", Font.BOLD, 26));
         title.putClientProperty("on_base", true);
         title.setBorder(BorderFactory.createEmptyBorder(25, 10, 10, 10));
+        // Section: Add the data or behavior needed to add.
         add(title, BorderLayout.NORTH);
 
         RoundedPanel listPanel = new RoundedPanel(35);
@@ -78,7 +97,9 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
 
         scroll.getViewport().addComponentListener(new ComponentAdapter() {
             @Override
+            // Section: Handle the logic for component resized.
             public void componentResized(ComponentEvent e) {
+                // Section: Refresh or recompute the state used to list text.
                 updateListText();
             }
         });
@@ -111,11 +132,14 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         center.add(listPanel, BorderLayout.CENTER);
         center.add(buttons, BorderLayout.SOUTH);
 
+        // Section: Add the data or behavior needed to add.
         add(center, BorderLayout.CENTER);
 
+        // Section: Handle the logic for refresh.
         refresh();
     }
 
+    // Section: Handle the logic for big button.
     private JButton bigButton(String text) {
         JButton b = new JButton(text);
         b.setFocusPainted(false);
@@ -125,6 +149,7 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         return b;
     }
 
+    // Section: Handle the logic for small arrow toggle.
     private JToggleButton smallArrowToggle(String symbol, String tooltip) {
         JToggleButton b = new JToggleButton(symbol);
         b.setToolTipText(tooltip);
@@ -136,6 +161,7 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         return b;
     }
 
+    // Section: Return the data used to width chars.
     private int getWidthChars() {
         int px = scroll.getViewport().getExtentSize().width;
         Insets in = taskArea.getInsets();
@@ -150,6 +176,7 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         return Math.max(40, chars);
     }
 
+    // Section: Refresh or recompute the state used to list text.
     private void updateListText() {
         if (activeModel == null) {
             taskArea.setText("No active tasks found.\n");
@@ -213,6 +240,7 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         taskArea.setCaretPosition(0);
     }
 
+    // Section: Handle the logic for format task line.
     private String formatTaskLine(int id, PlanSyncActiveTasksModel.Task task, LocalDate today) {
         long days = ChronoUnit.DAYS.between(today, task.deadline);
         String status = (days < 0)
@@ -228,10 +256,12 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
                 + "]";
     }
 
+    // Section: Handle the logic for safe.
     private String safe(String s) {
         return s == null ? "" : s;
     }
 
+    // Section: Handle the logic for center line.
     private String centerLine(String line, int width) {
         if (line == null) {
             line = "";
@@ -243,6 +273,7 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
         return " ".repeat(Math.max(0, pad)) + line;
     }
 
+    // Section: Handle the logic for double line.
     private String doubleLine(int width) {
         int w = Math.max(1, width);
         String line = "=".repeat(w);
@@ -250,7 +281,9 @@ public class ActiveTasksView extends JPanel implements RefreshableView {
     }
 
     @Override
+    // Section: Handle the logic for refresh.
     public void refresh() {
+        // Section: Refresh or recompute the state used to list text.
         updateListText();
     }
 }
