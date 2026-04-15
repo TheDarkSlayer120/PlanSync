@@ -24,151 +24,57 @@ The application allows users to:
 
 ---
 
-## Features
+## Download and Run
 
-### Task Management
-- Add active tasks with:
-  - task name
-  - task description
-  - deadline date
-- Edit existing active tasks
-- Delete active tasks
-- Mark active tasks as completed
-- View how many days remain until a deadline
-- See overdue task status automatically
+Download the correct release from the [Releases](../../releases) page:
 
-### Completed Task Tracking
-- Move finished tasks into a completed tasks section
-- Store both:
-  - original deadline
-  - completion date
-- View completed task history
-- Delete selected completed tasks
-- Clear all completed tasks
+- **Windows:** `PLANSYNC-Win.zip`
+- **macOS:** `PLANSYNC-Mac.zip`
+- **Linux:** `PLANSYNC-Linux.zip`
 
-### Recurring Task Scheduling
-- Add recurring tasks with:
-  - name
-  - description
-  - frequency settings
-- Supported recurring frequencies:
-  - Daily
-  - Weekly
-  - Monthly
-  - Yearly
-- Edit recurring tasks
-- Delete recurring tasks
-- Display next-occurrence style status information for recurring tasks
+After downloading, **extract the ZIP file first**, then follow the steps for your platform.
 
-### Calendar Integration
-- Monthly calendar view
-- Monday-first calendar layout
-- Highlights dates with active tasks
-- Shows task counts per day
-- Lets users inspect deadlines visually
-- Supports month-to-month navigation
+### Windows
 
-### Productivity Tools
-- **Countdown Timer**
-  - set custom durations
-  - start
-  - stop
-  - pause/resume behaviour
-  - reset timer
-  - completion alert sound
+The Windows release includes a bundled Java runtime, so you do **not** need to install Java separately.
 
-- **Stopwatch**
-  - start
-  - stop
-  - reset
-  - lap recording
-  - live elapsed time updates
+1. Download `PLANSYNC-Win.zip`
+2. Right-click the ZIP file, select **Properties**, and click or tick **Unblock** if that option appears
+3. Extract the ZIP
+4. Open the extracted folder: `PLANSYNC-Win/PlanSync/`
+5. Double-click **`PlanSync.exe`**
 
-- **Time Calculator**
-  - add a duration from the current time
-  - calculate duration between two times
-  - calculate duration between two dates
-  - display results in:
-    - full breakdown
-    - days
-    - weeks
-    - months
-    - years
+#### If Microsoft Defender / SmartScreen shows “Windows protected your PC”
 
-### Home Dashboard
-- Welcome screen with personalised username
-- Live clock and current date display
-- Quick-access tool shortcuts
-- Active task overview
-- Sort active tasks by deadline order
-- Filter recurring tasks by frequency
+If Windows shows a warning when opening `PlanSync.exe`:
 
-### Personalisation & Settings
-- Custom username
-- Theme selection
-- Light mode / dark mode
-- Settings saved locally using a properties file
+1. Click **More info**
+2. Click **Run anyway**
 
-### Data Persistence
-- Task and settings data saved locally using text/property files
-- Stores:
-  - active tasks
-  - completed tasks
-  - recurring tasks
-  - user settings
+If the file is still blocked:
 
----
+1. Right-click **`PlanSync.exe`**
+2. Select **Properties**
+3. Click or tick **Unblock**
+4. Click **Apply**
+5. Open **`PlanSync.exe`** again
 
-## Screenshots
+> Only do this if you downloaded the file from this repository’s official Releases page and trust the source.
 
-### Home Dashboard
-![Home Dashboard](screenshots/HOME.png)
+### macOS
 
-### Timer
-![Timer](screenshots/TIMER.png)
+The macOS release requires **Java 17 or newer**.
 
-### Stopwatch
-![Stopwatch](screenshots/STOPWATCH.png)
+1. Download `PLANSYNC-Mac.zip`
+2. Extract the ZIP
+3. Open the extracted folder: `PLANSYNC-Mac/PlanSync/`
+4. Double-click **`run.command`**
 
-### Time Calculator
-![Time Calculator](screenshots/TIME_CALCULATOR.png)
+If macOS blocks it the first time:
 
-### Calendar
-![Calendar](screenshots/CALENDAR.png)
+- Right-click **`run.command`** and choose **Open**
+- Or run it from Terminal:
 
-### Active Tasks
-![Active Tasks](screenshots/ACTIVE_TASKS.png)
-
-### Recurring Tasks
-![Recurring Tasks](screenshots/RECURRING_TASKS.png)
-
-### Completed Tasks
-![Completed Tasks](screenshots/COMPLETED_TASKS.png)
-
-### Settings
-![Settings](screenshots/SETTINGS.png)
-
----
-
-## Tech Stack
-
-- **Language:** Java
-- **GUI Framework:** Java Swing / AWT
-- **Architecture Style:** MVC-style separation using controllers, models, and views
-- **Storage:** Local file-based persistence (`.txt` and `.properties` files)
-
----
-
-## Project Structure
-
-```text
-PlanSync/
-│
-├── Main.java
-├── controller/
-├── model/
-├── views/
-├── components/
-├── modelTerminal/
-├── data/
-└── README.md
+```bash
+chmod +x run.command
+./run.command
