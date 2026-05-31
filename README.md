@@ -1,4 +1,4 @@
-# PlanSync 
+# PlanSync
 
 PlanSync is a **Time Management and Task Scheduling Application** designed to help users manage workload more fluently and efficiently while keeping track of progress.
 
